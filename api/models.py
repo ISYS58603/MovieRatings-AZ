@@ -1,8 +1,6 @@
-
-
 # In this file, we define the classes that represent the data in our application.
 # If our classes got to be too numerous, we could refactor them into separate files, 
-#  likely if we went this path, we would put them into a models directory.
+#  likely if we went this path, we would put them into a models directory rather than in the api directory.
 class User:
     
     def __init__(self, id: int, user_name: str, email: str):
