@@ -116,7 +116,11 @@ def get_user_by_id(user_id: int) -> User:
     conn.close()
     
     # Convert this list of users into a list of User objects, but only take the first object
-    return convert_rows_to_user_list(users)[0]
+    #  realy there should only ever be one or zero, but we will take the first one in case there are more
+    user_list = convert_rows_to_user_list(users)
+    if len(user_list) == 0:
+        return None
+    return user_list[0]
 
 def get_users_by_name(user_name: str, starts_with: bool =True) -> List[User]:
     """
