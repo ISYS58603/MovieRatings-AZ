@@ -29,3 +29,41 @@ The api will be accessible at http://localhost:5000
 
 ## Documentation
 The data model for the system is described in the [Data Model](docs/data_model.md) document.
+
+## File Structure
+```
+## Sample project structure
+Students have said that it is helpful to understand how a project of this type can be structured.  Here is a simple example of how the project could be structured.  This is not the only way to structure the project, but it is a way that has worked for many students in the past.
+
+```
+MovieRatings/
+│
+├── api/
+│   ├── __init__.py               # Package initializer for the 'api' directory
+│   ├── models.py                 # Database models/classes (e.g. User, Movie, Rating)
+│   ├── routes.py                 # API route definitions and request handling
+│   └── services.py               # Service functions, handling business logic, and database operations
+│
+├── data/
+│   └── movie_data.db             # SQLite database file 
+│
+├── docs/
+│   ├── api_documentation.md      # Documentation for API usage
+|   └── data_dictionary.md        # Data dictionary for the database
+│
+├── tests/                        # Optional directory for unit tests
+│   ├── __init__.py               # Package initializer for 'tests'
+│   ├── test_db.py                # Unit tests for database operations
+│   ├── test_routes.py            # Unit tests for API routes
+│   └── test_services.py          # Unit tests for service layer
+│
+├── utility/
+│   ├── helpers.py                # Utility functions used across the project
+│   └── config.py                 # Configuration settings for the application
+│
+├── .gitignore                    # Specifies files and folders to be ignored by Git
+├── LICENSE                       # License information for the project
+├── README.md                     # General overview and setup instructions for the project
+└── run.py                        # Entry point script to start the Flask application
+```
+
