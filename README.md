@@ -6,13 +6,17 @@ The intent of this project is demonstrate how to deploy an API to an Azure Funct
 
 ## Installation
 1. Clone the repository
-2. Install the required packages
+2. Create virtual environment
+```bash
+python -m venv venv
+```
+3. Install the required packages
 ```bash
 pip install -r requirements.txt
 ```
-3. Load the sample data
+4. Load the sample data
 ```bash
-python load_data.py
+python utility/load_data.py
 ```
 ## Running the application
 ```bash
