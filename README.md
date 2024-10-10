@@ -28,7 +28,9 @@ The api will be accessible at http://localhost:5000
 - View all movies
 
 ## Documentation
-The data model for the system is described in the [Data Model](docs/data_model.md) document.
+There is also an [API Documentation](docs/api_documentation.md) document that describes how to use the API.
+A [Data Dictionary](docs/data_dictionary.md) document is also available that describes the fields in the database.
+A short description of how the testig is done is available in the [Testing](docs/testing.md) document.
 
 ## File Structure
 ```
