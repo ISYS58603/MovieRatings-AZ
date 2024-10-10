@@ -1,6 +1,6 @@
 import sqlite3
-from api.models import User, Rating, Movie
 from typing import List
+from api.models import User, Rating, Movie
 from pathlib import Path
 
 def get_db_connection():
@@ -32,6 +32,9 @@ def convert_rows_to_user_list(users):
         list: A list of User objects created from the provided user dictionaries.
     """
     all_users = []
+    # If nothing was passed in, return an empty list
+    if users is None:
+        return all_users
     for user in users:
         user = User(user["user_id"], user["username"], user["email"])
         all_users.append(user)
@@ -194,6 +197,10 @@ def convert_rows_to_movie_list(movies):
         list of Movie: A list of Movie objects created from the input dictionaries.
     """
     all_movies = []
+    # If nothing was passed in, return an empty list
+    if movies is None:
+        return all_movies
+
     for movie in movies:
         movie = Movie(
             movie["movie_id"],
@@ -215,32 +222,37 @@ def create_movie(movie: Movie) -> int:
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     query = "INSERT INTO movies (title, genre, release_year, director) VALUES (?, ?, ?, ?)"
     cursor.execute(query, (movie.title, movie.genre, movie.release_year, movie.director))
     movie_id = cursor.lastrowid
-    
+
     conn.commit()
     conn.close()
-    
+
     return movie_id
 
-def get_all_movies() -> List[Movie]:
+
+def update_movie(movie: Movie):
     """
-    Retrieve all movies from the database.
+    Update a movie in the database.
+    Args:
+        movie (Movie): A Movie object containing the updated movie information.
     Returns:
-        List[Movie]: A list of Movie objects representing all movies in the database.
+        None
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    query = "SELECT movie_id,title,genre,release_year,director FROM movies"
-    cursor.execute(query)
-    
-    movies = cursor.fetchall()
+
+    query = "UPDATE movies SET title = ?, genre = ?, release_year = ?, director = ? WHERE movie_id = ?"
+    cursor.execute(
+        query,
+        (movie.title, movie.genre, movie.release_year, movie.director, movie.movie_id),
+    )
+
+    conn.commit()
     conn.close()
-    
-    return convert_rows_to_movie_list(movies)
+
 
 def delete_movie(movie_id: int):
     """
@@ -258,7 +270,53 @@ def delete_movie(movie_id: int):
     
     conn.commit()
     conn.close()
-    
+
+def get_all_movies() -> List[Movie]:
+    """
+    Retrieve all movies from the database.
+    Returns:
+        List[Movie]: A list of Movie objects representing all movies in the database.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT movie_id,title,genre,release_year,director FROM movies"
+    cursor.execute(query)
+
+    movies = cursor.fetchall()
+    conn.close()
+
+    return convert_rows_to_movie_list(movies)
+
+
+def get_movie_by_id(movie_id: int) -> Movie:
+    """
+    Retrieve a movie from the database by its ID.
+    Args:
+        movie_id (int): The ID of the movie to retrieve.
+    Returns:
+        Movie: A Movie object representing the movie with the given ID.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT movie_id,title,genre,release_year,director FROM movies WHERE movie_id = ?"
+    cursor.execute(query, (movie_id,))
+
+    movie = cursor.fetchone()
+    conn.close()
+
+    if movie is None:
+        return None
+
+    return Movie(
+        movie["movie_id"],
+        movie["title"],
+        movie["genre"],
+        movie["release_year"],
+        movie["director"],
+    )
+
 def get_movies_by_name(title: str, starts_with: bool = True) -> List[Movie]:
     """
     Retrieve a list of movies from the database whose titles match the given pattern.
@@ -275,6 +333,8 @@ def get_movies_by_name(title: str, starts_with: bool = True) -> List[Movie]:
 
     query = "SELECT movie_id,title,genre,release_year,director FROM movies WHERE title like ?"
 
+    # If the starts_with value is True then we will search for movies that start with the title like (title%), 
+    # otherwise we will search for movies that contain the title (%title%)
     params = f'{title}%' if starts_with else f'%{title}%'
     cursor.execute(query, (params,))
 
@@ -282,6 +342,7 @@ def get_movies_by_name(title: str, starts_with: bool = True) -> List[Movie]:
     conn.close()
 
     return convert_rows_to_movie_list(movies)
+
 
 # ---------------------------------------------------------
 # Ratings
