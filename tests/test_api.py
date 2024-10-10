@@ -18,14 +18,20 @@ def test_client():
 
 class TestUserRoutes:
 
+    # Purpose: This test ensures that the GET /api/users route returns a 200 status code and a list of users.
+    # Notice that this test method takes the test_client fixture as an argument. This allows the test method to access the test client and make requests to the API.
     def test_get_all_users(self, test_client):
+        # Use the test client to make a GET request to the /api/users route
         response = test_client.get("/api/users")
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) > 0
 
+    # Purpose: This test ensures that the GET /api/users/<user_id> route returns a 200 status code and the correct user.
     def test_create_user_route(self, test_client):
+        # Create a sample user data
         user_data = {"username": "test_user", "email": "testuser@example.com"}
+        # Use the test client to make a GET request to the /api/users route
         response = test_client.post("/api/users", json=user_data)
         assert response.status_code == 201
         data = json.loads(response.data)
@@ -39,9 +45,12 @@ class TestUserRoutes:
         # Clean up
         test_client.delete(f"/api/users/{user_data['id']}")
 
+    # Purpose: This test ensures that the PUT /api/users/<user_id> route returns a 200 status code and updates the user correctly.
     def test_update_user_route(self, test_client):
+        # We start by creating a user to update, then we update the user and verify the update.
         # Create a user to update
         user_data = {"username": "update_user", "email": "updateuser@example.com"}
+        # Use the test client to make a GET request to the /api/users route
         response = test_client.post("/api/users", json=user_data)
         data = json.loads(response.data)
         user_id = json.loads(response.data)["user"]["id"]
@@ -59,6 +68,7 @@ class TestUserRoutes:
         # Clean up
         test_client.delete(f"/api/users/{user_id}")
 
+    # Purpose: This test ensures that the DELETE /api/users/<user_id> route returns a 200 status code and the correct user.
     def test_delete_user_route(self, test_client):
         # Create a user to delete
         user_data = {"username": "delete_user", "email": "deleteuser@example.com"}
@@ -75,23 +85,69 @@ class TestUserRoutes:
         assert response.status_code == 404
 
 
-# class TestMovieRoutes:
+# The TestMovieRoutes class contains test methods for the movie routes.  It's a bit more complex than the TestUserRoutes class
+# we'll use function level fixtures to create a movie and clean up after the tests.
+class TestMovieRoutes:
 
-#     def test_get_all_movies(self, test_client):
-#         response = test_client.get("/api/movies")
-#         assert response.status_code == 200
-#         data = json.loads(response.data)
-#         assert len(data) > 0
+    # This fixture creates a movie and provides the movie object. The movie is deleted after the test is run.
+    @pytest.fixture(scope="class")
+    def movie_fixture(test_client):
+        # Create a movie
+        movie = Movie(movie_id=None,
+            title="Test Movie", 
+            genre="Horror", 
+            director="Wes Kraven", 
+            release_year=2021
+        )
+        movie_data = movie.to_dict()
+        response = test_client.post("/api/movies", json=movie_data)
+        data = json.loads(response.data)
+        # Get the id returned from the insert and assign it to the movie object
+        movie.id = data["id"]
 
-#     def test_create_movie(self, test_client):
-#         movie_data = {"title": "Inception", "year": 2010}
-#         response = test_client.post("/api/movies", json=movie_data)
-#         assert response.status_code == 201
-#         data = json.loads(response.data)
-#         assert data["title"] == movie_data["title"]
-#         assert data["year"] == movie_data["year"]
-#         # Clean up
-#         test_client.delete(f"/api/movies/{data['id']}")
+        # Yield the movie ID
+        yield movie
+
+        # Clean up
+        test_client.delete(f"/api/movies/{movie.id}")
+
+    # This test ensures that the GET /api/movies route returns a 200 status code and a list of movies.
+    def test_get_all_movies(self, test_client):
+        response = test_client.get("/api/movies")
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert len(data) > 0
+    
+    # This test ensures that the GET /api/movies?title=<movie_title> route returns a 200 status code and the correct movie.
+    def test_get_movie_by_name(self, test_client, movie_fixture):
+        response = test_client.get(f"/api/movies?title={movie_fixture.title}")
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert len(data) == 1
+        assert data[0]["title"] == movie_fixture.title
+        assert data[0]["genre"] == movie_fixture.genre
+        assert data[0]["director"] == movie_fixture.director
+        assert data[0]["release_year"] == movie_fixture.release_year
+
+    # def test_get_movie_by_id(self, test_client, movie_fixture):
+    #     response = test_client.get(f"/api/movies/{movie_fixture.id}")
+    #     assert response.status_code == 200
+    #     data = json.loads(response.data)
+    #     assert data["title"] == movie_fixture.title
+    #     assert data["genre"] == movie_fixture.genre
+    #     assert data["director"] == movie_fixture.director
+    #     assert data["release_year"] == movie_fixture.release_year
+
+    # This test ensures that the GET /api/movies/<movie_id> route returns a 200 status code and the correct movie.
+    def test_create_movie(self, test_client):
+        movie_data = {"title": "Inception", "release_year": 2010}
+        response = test_client.post("/api/movies", json=movie_data)
+        assert response.status_code == 201
+        data = json.loads(response.data)
+        assert data["title"] == movie_data["title"]
+        assert data["year"] == movie_data["year"]
+        # Clean up
+        test_client.delete(f"/api/movies/{data['id']}")
 
 
 # class TestRatingRoutes:

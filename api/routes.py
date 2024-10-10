@@ -1,5 +1,5 @@
 from flask import jsonify, request, Blueprint
-from api.services import get_all_users, get_user_by_id, get_users_by_name, create_user, update_user, delete_user
+import api.services as services
 from api.models import User, create_user_from_dict
 
 # Create a Blueprint instance
@@ -14,10 +14,14 @@ api_bp = Blueprint("api", __name__)
 def home():
     return 'Welcome to the User API!'
 
-@api_bp.route('/users', methods=['GET'])
+# ---------------------------------------------------------
+# Users
+# ---------------------------------------------------------
+@api_bp.route("/users", methods=["GET"])
 def get_users():
     """
     Retrieve a list of all users or filter users by name.
+    If the query string parameter "starts_with" is provided, filter users by name.
 
     Returns:
         tuple: A tuple containing a JSON response with all users and an HTTP status code 200.
@@ -25,10 +29,10 @@ def get_users():
     user_name = request.args.get("starts_with")  # Accessing query string parameter
     # If user_name is not provided, get all users
     if not user_name:
-        user_list = get_all_users()
+        user_list = services.get_all_users()
     else:
         # If user_name is provided, filter users by name
-        user_list = get_users_by_name(user_name)
+        user_list = services.get_users_by_name(user_name)
 
     # Convert the list of User objects to a list of dictionaries so that we can jsonify it
     user_dict_list = [user.to_dict() for user in user_list]
@@ -50,7 +54,7 @@ def lookup_user_by_name(user_name):
             - If users are found, returns a JSON list of users and a 200 status code.
             - If no users are found, returns a JSON message indicating the user was not found and a 404 status code.
     """
-    users = get_users_by_name(user_name,starts_with=False)
+    users = services.get_users_by_name(user_name,starts_with=False)
     if users:
         user_dict_list = [user.to_dict() for user in users]
         return jsonify(users), 200
@@ -70,7 +74,7 @@ def lookup_user_by_id(user_id):
             - If the user is found, returns a JSON object with user information and status code 200.
             - If the user is not found, returns a JSON object with an error message and status code 404.
     """
-    user = get_user_by_id(user_id)
+    user = services.get_user_by_id(user_id)
     if user:
         return jsonify(user.to_dict()), 200
     return jsonify({'message': 'User not found'}), 404
@@ -96,7 +100,7 @@ def add_new_user():
     new_user_dict = request.get_json()
     # We can also use the create_user_from_dict function to create a User object
     new_user = User(None, new_user_dict['username'], new_user_dict['email'])
-    new_user.id = create_user(new_user)
+    new_user.id = services.create_user(new_user)
     return jsonify({'message': 'User added', 'user': new_user.to_dict()}), 201
 
 @api_bp.route('/users/<int:user_id>', methods=['PUT'])
@@ -119,7 +123,7 @@ def update_existing_user(user_id):
     # We can also just create a user directly from the dictionary if we want
     user_dict['id'] = user_id
     user = create_user_from_dict(user_dict)
-    update_user(user)
+    services.update_user(user)
     return jsonify({'message': 'User updated', 'user': user.to_dict()}), 200
 
 @api_bp.route('/users/<int:user_id>', methods=['DELETE'])
@@ -136,5 +140,25 @@ def remove_user(user_id):
     Returns:
         tuple: A tuple containing a JSON response with a message and an HTTP status code.
     """
-    delete_user(user_id)
+    services.delete_user(user_id)
     return jsonify({'message': 'User deleted'}), 200
+
+# ---------------------------------------------------------
+# Movies
+# ---------------------------------------------------------
+@api_bp.route('/movies', methods=['GET'])
+def get_movies():
+    """
+    Retrieve a list of all movies.
+    If the query string parameter "starts_with" is provided, filter movies by name.
+    
+    Returns:
+        tuple: A tuple containing a JSON response with all movies and an HTTP status code 200.
+    """
+    movie_name = request.args.get("starts_with")
+    # If a "start_with" query parameter is provided, filter movies by name otherwise get all movies
+    movies = services.get_movies_by_name(movie_name, starts_with=True) if movie_name else services.get_all_movies()
+    
+    # Convert the list of Movie objects to a list of dictionaries so that we can jsonify it
+    movie_list = [movie.to_dict() for movie in movies]
+    return jsonify(movie_list), 200

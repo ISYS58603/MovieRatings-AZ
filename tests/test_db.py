@@ -1,4 +1,5 @@
 import unittest
+import pytest
 import api.services as services
 from api.models import User, Rating, Movie  
 
@@ -86,6 +87,29 @@ class TestUserDB(unittest.TestCase):
         deleted_user = services.get_user_by_id(known_user.id)
         self.assertIsNone(deleted_user)
 
+# Add a test class for the Movie database operations
+# This test class is a little more complex as we are going to use "fixtures"
+#  Fixtures allow us to setup and teardown resources before and after tests
+class TestMovieDB(unittest.TestCase):
+    
+    @pytest.fixture(scope="class")
+    def movie_fixture(test_client):
+        # Create a movie
+        movie = Movie(None, "test_movie", "test_genre", release_year=2024, director="Test Director")
+        movie.id = services.create_movie(movie)
+        yield movie
+        # Clean up
+        services.delete_movie(movie.id)
+        
+    # def test_get_all_movies(self):
+    #     all_movies = services.get_all_movies()
+    #     self.assertGreater(len(all_movies), 0)
+
+    # def test_get_movie_by_id(self, movie_fixture):
+    #     movie = services.get_movie_by_id(movie_fixture.id)
+    #     self.assertIsNotNone(movie)
+    #     self.assertEqual(movie.id, movie_fixture.id)
+    #     self.assertEqual(movie.title, movie_fixture.title)
     
 if __name__ == '__main__':
     unittest.main()
