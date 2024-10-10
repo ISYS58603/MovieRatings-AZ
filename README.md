@@ -32,8 +32,6 @@ There is also an [API Documentation](docs/api_documentation.md) document that de
 A [Data Dictionary](docs/data_dictionary.md) document is also available that describes the fields in the database.
 A short description of how the testig is done is available in the [Testing](docs/testing.md) document.
 
-## File Structure
-```
 ## Sample project structure
 Students have said that it is helpful to understand how a project of this type can be structured.  Here is a simple example of how the project could be structured.  This is not the only way to structure the project, but it is a way that has worked for many students in the past.
 
@@ -68,4 +66,11 @@ MovieRatings/
 ├── README.md                     # General overview and setup instructions for the project
 └── run.py                        # Entry point script to start the Flask application
 ```
+
+### Recommended Responsibilities for Each File:
+`models.py`: This is where you define your data models. Typically, these models represent tables in your database and contain methods related to the database schema, such as relationships and validation. The models are generally only responsible for mapping data and not directly interacting with the database.
+
+`services.py`: This file is responsible for the business logic and database access code. Any code that interacts with the database (like querying, inserting, updating, and deleting records) should go here. This is where you'd put functions like `get_user_by_id()`, `create_user()`, or `update_movie()`. By placing all your database access logic here, you keep it separate from routing and can easily reuse this logic in different parts of your application.
+
+`routes.py`: This file is used to define API routes. The routes should handle HTTP requests (e.g., GET, POST, PUT, DELETE), parse input, and return responses. They should not contain direct database access code. Instead, they should call functions in `services.py` to perform the necessary actions. This keeps the routes lightweight and focused on dealing with request/response operations.
 
