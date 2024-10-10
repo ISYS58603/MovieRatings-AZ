@@ -122,7 +122,7 @@ def get_user_by_id(user_id: int) -> User:
         return None
     return user_list[0]
 
-def get_users_by_name(user_name: str, starts_with: bool =True) -> List[User]:
+def get_users_by_name(username: str, starts_with: bool =True) -> List[User]:
     """
     Retrieve a list of users from the database whose usernames match the given pattern.
     Args:
@@ -141,7 +141,7 @@ def get_users_by_name(user_name: str, starts_with: bool =True) -> List[User]:
     query = "SELECT user_id,username,email FROM users WHERE username like ?"
     
     # We use the % symbol as a wildcard to match any characters before or after the user_name
-    params = f'{user_name}%' if starts_with else f'%{user_name}%'
+    params = f'{username}%' if starts_with else f'%{username}%'
     cursor.execute(query, (params,))
     
     users = cursor.fetchall()
@@ -163,7 +163,7 @@ def create_user(user: User) -> int:
     cursor = conn.cursor()
     
     query = "INSERT INTO users (username, email) VALUES (?, ?)"
-    cursor.execute(query, (user.user_name, user.email))
+    cursor.execute(query, (user.username, user.email))
     # Get the ID of the newly created user
     user_id = cursor.lastrowid
     
@@ -187,7 +187,7 @@ def update_user(user: User):
     cursor = conn.cursor()
     
     query = "UPDATE users SET username = ?, email = ? WHERE user_id = ?"
-    cursor.execute(query, (user.user_name, user.email, user.id))
+    cursor.execute(query, (user.username, user.email, user.id))
     
     conn.commit()
     conn.close()

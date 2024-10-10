@@ -83,6 +83,11 @@ def add_new_user():
 
     This function retrieves user data from a JSON request, creates a new User object,
     and adds it to the system using the create_user function.
+    
+    {
+        "username": "new_user",
+        "email": "new_user@example.com"
+    }
 
     Returns:
         Response: A JSON response containing a success message and the added user,
@@ -90,9 +95,9 @@ def add_new_user():
     """
     new_user_dict = request.get_json()
     # We can also use the create_user_from_dict function to create a User object
-    new_user = User(new_user_dict['id'], new_user_dict['user_name'], new_user_dict['email'])
+    new_user = User(None, new_user_dict['username'], new_user_dict['email'])
     new_user.id = create_user(new_user)
-    return jsonify({'message': 'User added', 'user': new_user}), 201
+    return jsonify({'message': 'User added', 'user': new_user.to_dict()}), 201
 
 @api_bp.route('/users/<int:user_id>', methods=['PUT'])
 def update_existing_user(user_id):
@@ -112,9 +117,10 @@ def update_existing_user(user_id):
     """
     user_dict = request.get_json()
     # We can also just create a user directly from the dictionary if we want
+    user_dict['id'] = user_id
     user = create_user_from_dict(user_dict)
-    update_user(user_id, user)
-    return jsonify({'message': 'User updated', 'user': user}), 200
+    update_user(user)
+    return jsonify({'message': 'User updated', 'user': user.to_dict()}), 200
 
 @api_bp.route('/users/<int:user_id>', methods=['DELETE'])
 def remove_user(user_id):

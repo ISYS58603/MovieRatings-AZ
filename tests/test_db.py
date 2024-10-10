@@ -22,13 +22,13 @@ class TestUserDB(unittest.TestCase):
         user = services.get_user_by_id(1)
         self.assertIsNotNone(user)
         self.assertEqual(user.id, 1)
-        self.assertEqual(user.user_name, "jane_doe")
+        self.assertEqual(user.username, "jane_doe")
 
     def test_get_users_by_starts_with_name(self):
         users = services.get_users_by_name("jane")
         self.assertGreater(len(users), 0)
         for user in users:
-            self.assertTrue("jane" in user.user_name.lower())
+            self.assertTrue("jane" in user.username.lower())
         # Now test for the opposite case, where we shouldn't get the user back
         users = services.get_users_by_name("wilson")
         self.assertEqual(len(users), 0)
@@ -37,12 +37,12 @@ class TestUserDB(unittest.TestCase):
         users = services.get_users_by_name("jane",starts_with=False)
         self.assertGreater(len(users), 0)
         for user in users:
-            self.assertTrue("jane" in user.user_name.lower())
-        # Now test for a user where just a part of the name is in the user_name
+            self.assertTrue("jane" in user.username.lower())
+        # Now test for a user where just a part of the name is in the username
         users = services.get_users_by_name("wilson", starts_with=False)
         self.assertGreater(len(users), 0)
         for user in users:
-            self.assertTrue("wilson" in user.user_name.lower())
+            self.assertTrue("wilson" in user.username.lower())
 
     def setup_known_user(self) -> User:
         # Create a known user for testing purposes
@@ -60,7 +60,7 @@ class TestUserDB(unittest.TestCase):
         self.assertIsNotNone(new_user.id)
         # Now get the user back and check that it is the same
         user = services.get_user_by_id(new_user.id)
-        self.assertEqual(user.user_name, new_user.user_name)
+        self.assertEqual(user.username, new_user.username)
         self.assertEqual(user.email, new_user.email)
         services.delete_user(new_user.id)
 
@@ -69,10 +69,10 @@ class TestUserDB(unittest.TestCase):
         known_user = self.setup_known_user()
 
         # Update the user
-        known_user.user_name = "updated_user"
+        known_user.username = "updated_user"
         services.update_user(known_user)
         updated_user = services.get_user_by_id(known_user.id)
-        self.assertEqual(updated_user.user_name, "updated_user")
+        self.assertEqual(updated_user.username, "updated_user")
 
         # Delete the user
         self.teardown_known_user(known_user.id)

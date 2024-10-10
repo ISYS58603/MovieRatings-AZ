@@ -3,26 +3,26 @@
 #  likely if we went this path, we would put them into a models directory rather than in the api directory.
 class User:
     
-    def __init__(self, id: int, user_name: str, email: str):
+    def __init__(self, id: int, username: str, email: str):
         self.id = id
-        self.user_name = user_name
+        self.username = username
         self.email = email
         self.date_joined = None
 
     def __repr__(self):
-        return f'<User {self.id} - {self.user_name}>'
+        return f'<User {self.id} - {self.username}>'
     
     def to_dict(self):
         return {
             'id': self.id,
-            'user_name': self.user_name,
+            'username': self.username,
             'email': self.email,
             'date_joined': self.date_joined
         }
 
 # This function will take a dictionary and return a User object    
 def create_user_from_dict( data: dict) -> User:
-        return User(data['id'], data['user_name'], data['email'])
+        return User(data['id'], data['username'], data['email'])
     
 class Rating:
         
