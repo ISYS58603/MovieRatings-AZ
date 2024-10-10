@@ -14,6 +14,11 @@ pip install -r requirements.txt
 ```bash
 python load_data.py
 ```
+## Running the application
+```bash
+python run.py
+```
+The api will be accessible at http://localhost:5000
 
 ## Features
 - Add a movie
@@ -22,3 +27,5 @@ python load_data.py
 - View average rating of a movie
 - View all movies
 
+## Documentation
+The data model for the system is described in the [Data Model](docs/data_model.md) document.
