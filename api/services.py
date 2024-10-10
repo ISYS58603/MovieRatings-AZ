@@ -1,5 +1,5 @@
 import sqlite3
-from models import User, Rating, Movie
+from api.models import User, Rating, Movie
 from typing import List
 from pathlib import Path
 
@@ -147,22 +147,25 @@ def get_users_by_name(user_name: str, starts_with: bool =True) -> List[User]:
     return convert_rows_to_user_list(users)
 
 # Add a user to the database
-def create_user(user: User):
+def create_user(user: User) -> int:
     """
     Creates a new user in the database.
     Args:
         user (User): An instance of the User class containing the user's details.
     Returns:
-        None
+        int: The ID of the newly created user.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
     
     query = "INSERT INTO users (username, email) VALUES (?, ?)"
     cursor.execute(query, (user.user_name, user.email))
+    # Get the ID of the newly created user
+    user_id = cursor.lastrowid
     
     conn.commit()
     conn.close()
+    return user_id
 
 # Update a user in the database
 def update_user(user: User):
@@ -203,56 +206,3 @@ def delete_user(user_id: int):
     conn.commit()
     conn.close()
 
-if __name__ == '__main__':
-        
-    # Usage
-    ## Test to see if all users are returned
-    # print("Get all users")
-    # all_users = get_all_users()
-    # for user in all_users:
-    #    print(user)
-
-    ## Test to get a single user by id
-    # print(get_user_by_id(1))
-
-    ## Test to get a list of users by name
-    # Test to get a list of users by name that start with the provided string
-    # print('Starts with')
-    # print("-----------")
-    # for n in get_users_by_name('l'):
-    #     print(n)
-
-    # # Test to get a list of users by name that start with the provided string
-    # print('Contains')
-    # print("-----------")
-    # for name in get_users_by_name('luke', False):
-    #     print(name)
-
-    # Test to create a user
-    print("Create a user")
-    print("-----------")
-    new_user = User(None, 'test_user', 'testuser@example.com')
-    create_user(new_user)
-    added_user = get_users_by_name('test_user')[0]
-    print(added_user)
-
-    # Test to update a user
-    print("Update a user")
-    print("-----------")
-    # Start by getting the user to update
-    user_to_update = get_users_by_name('test_user')[0]
-    print(user_to_update)
-    # Update the user
-    user_to_update.user_name = 'updated_user'
-    update_user(user_to_update)
-    # Get the user again to see the changes
-    updated_user = get_user_by_id(user_to_update.id)
-    print(updated_user)
-
-    # # Test to remove a user 
-    # print('Now delete the user')
-    # print("-----------")
-    # # Start by getting the last user put into the database
-    # last_user = get_all_users()[-1]
-    # delete_user(last_user.id)
-    # print(get_users_by_name(last_user.user_name))

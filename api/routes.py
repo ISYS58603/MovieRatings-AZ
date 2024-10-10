@@ -1,15 +1,20 @@
-from flask import jsonify, request, Flask
-from services import get_all_users, get_user_by_id, get_users_by_name, create_user, update_user, delete_user
-from models import User, create_user_from_dict
+from flask import jsonify, request, Blueprint
+from api.services import get_all_users, get_user_by_id, get_users_by_name, create_user, update_user, delete_user
+from api.models import User, create_user_from_dict
 
+# Create a Blueprint instance
+# This will allow us to group related routes together. All the routes in this file will be part of the 'api' Blueprint.
+# This means that the routes will be accessible at '/api/' followed by the route path.
+# For instance, the route '/users' will be accessible at '/api/users'.
+# We can then register the Blueprint with the Flask app in the main.py file.
 
-app = Flask(__name__)
+api_bp = Blueprint("api", __name__)
 
-@app.route('/')
+@api_bp.route('/')
 def home():
     return 'Welcome to the User API!'
 
-@app.route('/users', methods=['GET'])
+@api_bp.route('/users', methods=['GET'])
 def get_users():
     """
     Retrieve a list of all users or filter users by name.
@@ -17,16 +22,42 @@ def get_users():
     Returns:
         tuple: A tuple containing a JSON response with all users and an HTTP status code 200.
     """
-    user_name = request.args.get("user_name")  # Accessing query string parameter
+    user_name = request.args.get("starts_with")  # Accessing query string parameter
+    # If user_name is not provided, get all users
     if not user_name:
         user_list = get_all_users()
     else:
+        # If user_name is provided, filter users by name
         user_list = get_users_by_name(user_name)
-        
+
+    # Convert the list of User objects to a list of dictionaries so that we can jsonify it
     user_dict_list = [user.to_dict() for user in user_list]
     return (jsonify(user_dict_list), 200)
 
-@app.route('/users/<int:user_id>', methods=['GET'])
+# Note this is exactly the same functionality as the /users route, but rather than use
+#  a query string parameter, we are using a route parameter to filter the users by name.  And instead of
+# requiring the name to start with the provided string, we are looking for a match anywhere in the string.
+@api_bp.route("/users/<string:user_name>", methods=["GET"])
+def lookup_user_by_name(user_name):
+    """
+    Look up users by their name and return their details in JSON format.
+
+    Args:
+        user_name (str): The name of the user to look up.
+
+    Returns:
+        tuple: A tuple containing a JSON response and an HTTP status code.
+            - If users are found, returns a JSON list of users and a 200 status code.
+            - If no users are found, returns a JSON message indicating the user was not found and a 404 status code.
+    """
+    users = get_users_by_name(user_name,starts_with=False)
+    if users:
+        user_dict_list = [user.to_dict() for user in users]
+        return jsonify(users), 200
+    return jsonify({"message": "User not found"}), 404
+
+
+@api_bp.route('/users/<int:user_id>', methods=['GET'])
 def lookup_user_by_id(user_id):
     """
     Retrieve user information by user ID.
@@ -44,26 +75,8 @@ def lookup_user_by_id(user_id):
         return jsonify(user.to_dict()), 200
     return jsonify({'message': 'User not found'}), 404
 
-@app.route('/users/<string:user_name>', methods=['GET'])
-def lookup_user_by_name(user_name):
-    """
-    Look up users by their name and return their details in JSON format.
 
-    Args:
-        user_name (str): The name of the user to look up.
-
-    Returns:
-        tuple: A tuple containing a JSON response and an HTTP status code.
-            - If users are found, returns a JSON list of users and a 200 status code.
-            - If no users are found, returns a JSON message indicating the user was not found and a 404 status code.
-    """
-    users = get_users_by_name(user_name)
-    if users:
-        user_dict_list = [user.to_dict() for user in users]
-        return jsonify(users), 200
-    return jsonify({'message': 'User not found'}), 404
-
-@app.route('/users', methods=['POST'])
+@api_bp.route('/users', methods=['POST'])
 def add_new_user():
     """
     Adds a new user to the system.
@@ -78,10 +91,10 @@ def add_new_user():
     new_user_dict = request.get_json()
     # We can also use the create_user_from_dict function to create a User object
     new_user = User(new_user_dict['id'], new_user_dict['user_name'], new_user_dict['email'])
-    create_user(new_user)
+    new_user.id = create_user(new_user)
     return jsonify({'message': 'User added', 'user': new_user}), 201
 
-@app.route('/users/<int:user_id>', methods=['PUT'])
+@api_bp.route('/users/<int:user_id>', methods=['PUT'])
 def update_existing_user(user_id):
     """
     Update an existing user with the provided user ID.
@@ -103,7 +116,7 @@ def update_existing_user(user_id):
     update_user(user_id, user)
     return jsonify({'message': 'User updated', 'user': user}), 200
 
-@app.route('/users/<int:user_id>', methods=['DELETE'])
+@api_bp.route('/users/<int:user_id>', methods=['DELETE'])
 def remove_user(user_id):
     """
     Remove a user by their user ID.
@@ -119,6 +132,3 @@ def remove_user(user_id):
     """
     delete_user(user_id)
     return jsonify({'message': 'User deleted'}), 200
-
-if __name__ == '__main__':
-    app.run(debug=True)
