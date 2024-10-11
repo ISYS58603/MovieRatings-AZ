@@ -17,6 +17,28 @@ def get_db_connection():
     connection = sqlite3.connect(DATABASE_PATH/'movie_data.db')
     connection.row_factory = sqlite3.Row  # This allows you to access columns by name
     return connection
+
+def run_query(query, params=None):
+    """
+    Run a query on the database and return the results.
+
+    Args:
+        query (str): The SQL query to be executed.
+        params (tuple, optional): The parameters to be passed to the query. Defaults to None.
+
+    Returns:
+        list of dict: A list of dictionaries representing the query results.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if params is not None:
+        cursor.execute(query, params)
+    else:
+        cursor.execute(query)
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
 # ---------------------------------------------------------
 # Users
 # ---------------------------------------------------------
@@ -247,7 +269,7 @@ def update_movie(movie: Movie):
     query = "UPDATE movies SET title = ?, genre = ?, release_year = ?, director = ? WHERE movie_id = ?"
     cursor.execute(
         query,
-        (movie.title, movie.genre, movie.release_year, movie.director, movie.movie_id),
+        (movie.title, movie.genre, movie.release_year, movie.director, movie.id),
     )
 
     conn.commit()
@@ -343,7 +365,36 @@ def get_movies_by_name(title: str, starts_with: bool = True) -> List[Movie]:
 
     return convert_rows_to_movie_list(movies)
 
+def get_movies_matching_criteria(genre: str ="", director: str ="", year: int=0) -> List[Movie]:
+    """
+    Retrieve a list of movies from the database that match the given criteria.
+    Args:
+        genre (str, optional): The genre of the movie to search for. Defaults to an empty string.
+        director (str, optional): The director of the movie to search for. Defaults to an empty string.
+        year (int, optional): The release year of the movie to search for. Defaults to 0.
+        
+    Returns:
 
+        List[Movie]: A list of Movie objects that match the search criteria.
+    """
+    query = "SELECT movie_id,title,genre,release_year,director FROM movies WHERE "
+    where_clauses = [] # A list to store the WHERE clauses for the query
+    params = []
+    if genre:
+        where_clauses.append("genre like ?")
+        params.append(f"%{genre}%")
+    if director:
+        where_clauses.append("director like ?")
+        params.append(f"%{director}%")
+    if year > 0:
+        where_clauses.append("release_year = ?")
+        params.append(year)
+    
+    where_clause = " AND ".join(where_clauses) # Join the WHERE clauses with an AND statement
+    query += where_clause
+    movies = run_query(query, params=params)
+    return convert_rows_to_movie_list(movies)
+    
 # ---------------------------------------------------------
 # Ratings
 # ---------------------------------------------------------
