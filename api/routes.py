@@ -1,6 +1,6 @@
 from flask import jsonify, request, Blueprint
 import api.services as services
-from api.models import User, create_user_from_dict
+from api.models import User, create_user_from_dict, Movie
 
 # Create a Blueprint instance
 # This will allow us to group related routes together. All the routes in this file will be part of the 'api' Blueprint.
@@ -22,6 +22,7 @@ def get_users():
     """
     Retrieve a list of all users or filter users by name.
     If the query string parameter "starts_with" is provided, filter users by name.
+    If the query string parameter "contains" is provided, filter users by name containing the string.
 
     Returns:
         tuple: A tuple containing a JSON response with all users and an HTTP status code 200.
@@ -29,7 +30,11 @@ def get_users():
     user_name = request.args.get("starts_with")  # Accessing query string parameter
     # If user_name is not provided, get all users
     if not user_name:
-        user_list = services.get_all_users()
+        contains_user_name = request.args.get("contains")
+        if contains_user_name:
+            user_list = services.get_users_by_name(contains_user_name, starts_with=False)
+        else:
+            user_list = services.get_all_users()
     else:
         # If user_name is provided, filter users by name
         user_list = services.get_users_by_name(user_name)
@@ -37,29 +42,6 @@ def get_users():
     # Convert the list of User objects to a list of dictionaries so that we can jsonify it
     user_dict_list = [user.to_dict() for user in user_list]
     return (jsonify(user_dict_list), 200)
-
-# Note this is exactly the same functionality as the /users route, but rather than use
-#  a query string parameter, we are using a route parameter to filter the users by name.  And instead of
-# requiring the name to start with the provided string, we are looking for a match anywhere in the string.
-@api_bp.route("/users/<string:user_name>", methods=["GET"])
-def lookup_user_by_name(user_name):
-    """
-    Look up users by their name and return their details in JSON format.
-
-    Args:
-        user_name (str): The name of the user to look up.
-
-    Returns:
-        tuple: A tuple containing a JSON response and an HTTP status code.
-            - If users are found, returns a JSON list of users and a 200 status code.
-            - If no users are found, returns a JSON message indicating the user was not found and a 404 status code.
-    """
-    users = services.get_users_by_name(user_name,starts_with=False)
-    if users:
-        user_dict_list = [user.to_dict() for user in users]
-        return jsonify(users), 200
-    return jsonify({"message": "User not found"}), 404
-
 
 @api_bp.route('/users/<int:user_id>', methods=['GET'])
 def lookup_user_by_id(user_id):
@@ -162,3 +144,38 @@ def get_movies():
     # Convert the list of Movie objects to a list of dictionaries so that we can jsonify it
     movie_list = [movie.to_dict() for movie in movies]
     return jsonify(movie_list), 200
+
+@api_bp.route('/movies/<int:movie_id>', methods=['GET'])
+def lookup_movie_by_id(movie_id):
+    """
+    Retrieve movie information by movie ID.
+
+    Args:
+        movie_id (int): The unique identifier of the movie.
+
+    Returns:
+        tuple: A tuple containing a JSON response and an HTTP status code.
+            - If the movie is found, returns a JSON object with movie information and status code 200.
+            - If the movie is not found, returns a JSON object with an error message and status code 404.
+    """
+    movie = services.get_movie_by_id(movie_id)
+    if movie:
+        return jsonify(movie.to_dict()), 200
+    return jsonify({'message': 'Movie not found'}), 404
+
+@api_bp.route('/movies', methods=['POST'])
+def add_new_movie():
+    """
+    Adds a new movie to the system.
+
+    This function retrieves movie data from a JSON request, creates a new Movie object,
+    and adds it to the system using the create_movie function.
+
+    Returns:
+        Response: A JSON response containing a success message and the added movie,
+                  with a status code of 201 (Created).
+    """
+    new_movie_dict = request.get_json()
+    new_movie = Movie.from_dict(new_movie_dict)
+    new_movie_id = services.create_movie(new_movie)
+    return jsonify({'message': 'Movie added', 'movie': new_movie.to_dict()}), 201
