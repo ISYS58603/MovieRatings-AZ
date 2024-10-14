@@ -2,7 +2,15 @@ import pytest
 import api.services as services
 from api.models import User, Rating, Movie
 
+# This set of tests will test the database connection and the services module
+# It is important to test the database connection and the services module to ensure that the database is set up correctly and that the services module is working as expected
+# The way this file is setup is to just use a list of functions as the tests, there are no classes in this module
+# It is a simple way to write tests and keep everything in one file
 
+
+# Fixtures are used to set up the test environment before running the tests
+# They are used to create objects that are used in the tests
+# The objects created by the fixtures are passed to the test functions as arguments
 @pytest.fixture
 def known_user():
     # Create a known user for testing purposes
@@ -40,36 +48,38 @@ def test_get_all_users():
     all_users = services.get_all_users()
     assert len(all_users) > 0
 
-
-def test_get_user_by_id():
-    user = services.get_user_by_id(1)
+# This test will use the known_user fixture to create a user and then test the get_user_by_id function
+def test_get_user_by_id(known_user):
+    """ Test the get_user_by_id function """
+    user = services.get_user_by_id(known_user.id)
     assert user is not None
-    assert user.id == 1
-    assert user.username == "jane_doe"
+    assert user.id == known_user.id
+    assert user.username == known_user.username
 
 
-def test_get_users_by_starts_with_name():
-    users = services.get_users_by_name("jane")
+def test_get_users_by_starts_with_name(known_user):
+    # We're going to take just the first three characters of the username and search for users
+    users = services.get_users_by_name(known_user.username[:3], starts_with=True)
     assert len(users) > 0
     for user in users:
-        assert "jane" in user.username.lower()
+        assert known_user.username[:3] in user.username[:3].lower()
 
     # Now test for the opposite case, where we shouldn't get the user back
-    users = services.get_users_by_name("wilson")
+    users = services.get_users_by_name("xyz", starts_with=True)
     assert len(users) == 0
 
 
-def test_get_users_by_contains_name():
-    users = services.get_users_by_name("jane", starts_with=False)
+def test_get_users_by_contains_name(known_user):
+    users = services.get_users_by_name(known_user.username, starts_with=False)
     assert len(users) > 0
     for user in users:
-        assert "jane" in user.username.lower()
+        assert known_user.username in user.username.lower()
 
     # Now test for a user where just a part of the name is in the username
-    users = services.get_users_by_name("wilson", starts_with=False)
-    assert len(users) > 0
+    users = services.get_users_by_name("xyz", starts_with=False)
+    assert len(users) == 0
     for user in users:
-        assert "wilson" in user.username.lower()
+        assert "xyz" in user.username.lower()
 
 
 def test_create_user():
@@ -98,7 +108,9 @@ def test_delete_user(known_user):
     deleted_user = services.get_user_by_id(known_user.id)
     assert deleted_user is None
 
-
+#---------------------------------------------------------
+# This set of tests will test the database connection and the services module for the MOVIES table
+#---------------------------------------------------------
 def test_get_all_movies():
     all_movies = services.get_all_movies()
     assert len(all_movies) > 0
