@@ -108,12 +108,21 @@ def test_delete_user(known_user):
     deleted_user = services.get_user_by_id(known_user.id)
     assert deleted_user is None
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # This set of tests will test the database connection and the services module for the MOVIES table
-#---------------------------------------------------------
+# ---------------------------------------------------------
 def test_get_all_movies():
     all_movies = services.get_all_movies()
     assert len(all_movies) > 0
+
+
+def test_get_movie_by_id(new_movie):
+    movie = services.get_movie_by_id(new_movie.movie_id)
+    assert movie is not None
+    assert movie.title == "test_movie"
+    assert movie.genre == "test_genre"
+    assert movie.release_year == 2024
+    assert movie.director == "Test Director"
 
 
 def test_create_movie():
