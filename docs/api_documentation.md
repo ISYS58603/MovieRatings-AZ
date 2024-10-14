@@ -1,225 +1,164 @@
-# Movie Review Management API Documentation
+# User and Movie API Documentation
 
-This document provides an overview of the endpoints available in the Movie Review Management API, which allows for managing users, movies, and user reviews, including creating, retrieving, updating, and deleting records. All routes are part of the `/api` Blueprint, and they need to be accessed with the `/api` prefix.
+This document provides an overview of the API routes for managing users and movies. These routes are part of a RESTful API that allows creating, updating, deleting, and retrieving information about users and movies.
 
 ## Base URL
+The base URL for all the routes is `/api`.
 
-```
-/api
-```
-
-## User API Documentation
-
-## Endpoints
+## API Endpoints
 
 ### 1. Home Endpoint
-
 - **URL**: `/`
 - **Method**: `GET`
-- **Description**: A welcome message for the User API.
+- **Description**: Displays a welcome message for the API.
 - **Response**:
-  - `200 OK`: Returns a welcome message.
+  - **200 OK**: Returns a plain text message: "Welcome to the User API!"
 
-### 2. Get All Users or Filter Users by Name
-
-- **URL**: `/users`
+### 2. Test Connection Endpoint
+- **URL**: `/api/connection`
 - **Method**: `GET`
-- **Query Parameter**:
-  - `starts_with` (optional): Filter users whose names start with the given string.
-- **Description**: Retrieves a list of all users or filters users by the given name prefix.
+- **Description**: Tests the connection to the API.
 - **Response**:
-  - `200 OK`: Returns a JSON array of users.
+  - **200 OK**: Returns a JSON message indicating a successful connection: `{"message": "Successfully connected to the API"}`
 
-### 3. Look Up Users by Name
+### 3. User Routes
 
-- **URL**: `/users/<string:user_name>`
+#### Get All Users
+- **URL**: `/api/users`
 - **Method**: `GET`
+- **Description**: Retrieve all users or filter users by name using query parameters.
+- **Query Parameters**:
+  - `starts_with` (optional): Filter users whose names start with this string.
+  - `contains` (optional): Filter users whose names contain this string.
+- **Response**:
+  - **200 OK**: Returns a list of users.
+
+#### Get User by ID
+- **URL**: `/api/users/{user_id}`
+- **Method**: `GET`
+- **Description**: Retrieve a user by their unique ID.
 - **Path Parameter**:
-  - `user_name` (str): The name of the user to look up.
-- **Description**: Looks up users by their name and returns their details in JSON format. The `user_name` can be matched anywhere within the user's name.
+  - `user_id` (required): The ID of the user to retrieve.
 - **Response**:
-  - `200 OK`: Returns a JSON list of users if found.
-  - `404 Not Found`: Returns an error message if no users are found.
+  - **200 OK**: Returns user details.
+  - **404 Not Found**: User not found.
 
-### 4. Get User by ID
-
-- **URL**: `/users/<int:user_id>`
-- **Method**: `GET`
-- **Path Parameter**:
-  - `user_id` (int): The unique identifier of the user.
-- **Description**: Retrieves user information by user ID.
-- **Response**:
-  - `200 OK`: Returns a JSON object with user information.
-  - `404 Not Found`: Returns an error message if the user is not found.
-
-### 5. Add a New User
-
-- **URL**: `/users`
+#### Add New User
+- **URL**: `/api/users`
 - **Method**: `POST`
-- **Request Body** (JSON):
+- **Description**: Add a new user to the system.
+- **Request Body**:
   ```json
   {
     "username": "new_user",
     "email": "new_user@example.com"
   }
   ```
-- **Description**: Adds a new user to the system.
 - **Response**:
-  - `201 Created`: Returns a JSON response containing a success message and the added user.
+  - **201 Created**: Returns a message and details of the newly created user.
 
-### 6. Update an Existing User
-
-- **URL**: `/users/<int:user_id>`
+#### Update Existing User
+- **URL**: `/api/users/{user_id}`
 - **Method**: `PUT`
+- **Description**: Update an existing user.
 - **Path Parameter**:
-  - `user_id` (int): The ID of the user to be updated.
-- **Request Body** (JSON):
+  - `user_id` (required): The ID of the user to update.
+- **Request Body**:
   ```json
   {
     "username": "updated_user",
     "email": "updated_user@example.com"
   }
   ```
-- **Description**: Updates an existing user with the provided user ID.
 - **Response**:
-  - `200 OK`: Returns a JSON response containing a success message and the updated user.
+  - **200 OK**: Returns a message and updated user details.
 
-### 7. Delete a User
-
-- **URL**: `/users/<int:user_id>`
+#### Delete User
+- **URL**: `/api/users/{user_id}`
 - **Method**: `DELETE`
+- **Description**: Delete a user by their ID.
 - **Path Parameter**:
-  - `user_id` (int): The ID of the user to be removed.
-- **Description**: Removes a user by their user ID.
+  - `user_id` (required): The ID of the user to delete.
 - **Response**:
-  - `200 OK`: Returns a JSON response indicating the user has been deleted.
+  - **200 OK**: Returns a message indicating the user was deleted.
 
-## Movie API Documentation
+### 4. Movie Routes
 
-### 1. Get All Movies
-
-- **URL**: `/movies`
+#### Get All Movies
+- **URL**: `/api/movies`
 - **Method**: `GET`
-- **Description**: Retrieves a list of all movies.
+- **Description**: Retrieve all movies or filter movies by title.
+- **Query Parameter**:
+  - `title` (optional): Filter movies by title.
 - **Response**:
-  - `200 OK`: Returns a JSON array of movies.
+  - **200 OK**: Returns a list of movies.
 
-### 2. Get Movie by ID
-
-- **URL**: `/movies/<int:movie_id>`
+#### Get Movie by ID
+- **URL**: `/api/movies/{movie_id}`
 - **Method**: `GET`
+- **Description**: Retrieve a movie by its unique ID.
 - **Path Parameter**:
-  - `movie_id` (int): The unique identifier of the movie.
-- **Description**: Retrieves movie information by movie ID.
+  - `movie_id` (required): The ID of the movie to retrieve.
 - **Response**:
-  - `200 OK`: Returns a JSON object with movie information.
-  - `404 Not Found`: Returns an error message if the movie is not found.
+  - **200 OK**: Returns movie details.
+  - **404 Not Found**: Movie not found.
 
-### 3. Add a New Movie
-
-- **URL**: `/movies`
+#### Add New Movie
+- **URL**: `/api/movies`
 - **Method**: `POST`
-- **Request Body** (JSON):
+- **Description**: Add a new movie to the system.
+- **Request Body**:
   ```json
   {
-    "title": "new_movie",
-    "director": "director_name",
-    "release_year": 2023
+    "title": "Inception",
+    "genre": "Sci-Fi",
+    "release_year": 2010,
+    "director": "Christopher Nolan"
   }
   ```
-- **Description**: Adds a new movie to the system.
 - **Response**:
-  - `201 Created`: Returns a JSON response containing a success message and the added movie.
+  - **201 Created**: Returns a message and details of the newly created movie.
 
-### 4. Update an Existing Movie
-
-- **URL**: `/movies/<int:movie_id>`
+#### Update Existing Movie
+- **URL**: `/api/movies/{movie_id}`
 - **Method**: `PUT`
+- **Description**: Update an existing movie.
 - **Path Parameter**:
-  - `movie_id` (int): The ID of the movie to be updated.
-- **Request Body** (JSON):
+  - `movie_id` (required): The ID of the movie to update.
+- **Request Body**:
   ```json
   {
-    "title": "updated_movie",
-    "director": "updated_director",
-    "release_year": 2024
+    "title": "Updated Movie Title",
+    "genre": "Updated Genre",
+    "release_year": 2024,
+    "director": "Updated Director"
   }
   ```
-- **Description**: Updates an existing movie with the provided movie ID.
 - **Response**:
-  - `200 OK`: Returns a JSON response containing a success message and the updated movie.
+  - **200 OK**: Returns a message and updated movie details.
 
-### 5. Delete a Movie
-
-- **URL**: `/movies/<int:movie_id>`
+#### Delete Movie
+- **URL**: `/api/movies/{movie_id}`
 - **Method**: `DELETE`
+- **Description**: Delete a movie by its ID.
 - **Path Parameter**:
-  - `movie_id` (int): The ID of the movie to be removed.
-- **Description**: Removes a movie by its movie ID.
+  - `movie_id` (required): The ID of the movie to delete.
 - **Response**:
-  - `200 OK`: Returns a JSON response indicating the movie has been deleted.
+  - **200 OK**: Returns a message indicating the movie was deleted.
 
-## Ratings API Documentation
+## Swagger UI Documentation
 
-### 1. Get All Ratings
+The API is documented using **Swagger UI**, which provides an interactive user interface to explore and test the API endpoints.
 
-- **URL**: `/ratings`
-- **Method**: `GET`
-- **Description**: Retrieves a list of all ratings.
-- **Response**:
-  - `200 OK`: Returns a JSON array of ratings.
+### Accessing Swagger UI
+- **URL**: `http://localhost:5000/apidocs/`
+- **Description**: Swagger UI provides a visual representation of the API routes, allowing you to send test requests and view the responses directly from the browser.
 
-### 2. Get Rating by ID
+### Steps to Access Swagger UI
+1. **Run the Flask application**: Start your server by running the `run.py` file:
+   ```sh
+   python run.py
+   ```
+2. **Open your browser**: Navigate to `http://localhost:5000/apidocs/` to see the Swagger UI.
+3. **Interact with the API**: You can view all available endpoints, see the required parameters, and send requests to test each endpoint.
 
-- **URL**: `/ratings/<int:rating_id>`
-- **Method**: `GET`
-- **Path Parameter**:
-  - `rating_id` (int): The unique identifier of the rating.
-- **Description**: Retrieves rating information by rating ID.
-- **Response**:
-  - `200 OK`: Returns a JSON object with rating information.
-  - `404 Not Found`: Returns an error message if the rating is not found.
-
-### 3. Add a New Rating
-
-- **URL**: `/ratings`
-- **Method**: `POST`
-- **Request Body** (JSON):
-  ```json
-  {
-    "user_id": 1,
-    "movie_id": 2,
-    "rating": 4.5
-  }
-  ```
-- **Description**: Adds a new rating to the system.
-- **Response**:
-  - `201 Created`: Returns a JSON response containing a success message and the added rating.
-
-### 4. Update an Existing Rating
-
-- **URL**: `/ratings/<int:rating_id>`
-- **Method**: `PUT`
-- **Path Parameter**:
-  - `rating_id` (int): The ID of the rating to be updated.
-- **Request Body** (JSON):
-  ```json
-  {
-    "user_id": 1,
-    "movie_id": 2,
-    "rating": 4.0
-  }
-  ```
-- **Description**: Updates an existing rating with the provided rating ID.
-- **Response**:
-  - `200 OK`: Returns a JSON response containing a success message and the updated rating.
-
-### 5. Delete a Rating
-
-- **URL**: `/ratings/<int:rating_id>`
-- **Method**: `DELETE`
-- **Path Parameter**:
-  - `rating_id` (int): The ID of the rating to be removed.
-- **Description**: Removes a rating by its rating ID.
-- **Response**:
-  - `200 OK`: Returns a JSON response indicating the rating has been deleted.
