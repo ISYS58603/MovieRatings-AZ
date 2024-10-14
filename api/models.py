@@ -58,7 +58,9 @@ class Movie:
     @classmethod
     def from_dict(cls, data: dict) -> 'Movie':
         return cls(
-            movie_id=data['movie_id'],
+            # Sometimes an id doesn't make sense to be in the dictionary, 
+            #   so we'll use the get method to return None if it doesn't exist
+            movie_id=data.get('movie_id',None),
             title=data['title'],
             genre=data['genre'],
             release_year=data['release_year'],

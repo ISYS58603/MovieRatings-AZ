@@ -132,12 +132,12 @@ def remove_user(user_id):
 def get_movies():
     """
     Retrieve a list of all movies.
-    If the query string parameter "starts_with" is provided, filter movies by name.
+    If the query string parameter "title" is provided, filter movies by title.
     
     Returns:
         tuple: A tuple containing a JSON response with all movies and an HTTP status code 200.
     """
-    movie_name = request.args.get("starts_with")
+    movie_name = request.args.get("title")
     # If a "start_with" query parameter is provided, filter movies by name otherwise get all movies
     movies = services.get_movies_by_name(movie_name, starts_with=True) if movie_name else services.get_all_movies()
     
@@ -178,4 +178,45 @@ def add_new_movie():
     new_movie_dict = request.get_json()
     new_movie = Movie.from_dict(new_movie_dict)
     new_movie_id = services.create_movie(new_movie)
+    new_movie.movie_id = new_movie_id
     return jsonify({'message': 'Movie added', 'movie': new_movie.to_dict()}), 201
+
+@api_bp.route('/movies/<int:movie_id>', methods=['PUT'])
+def update_existing_movie(movie_id):
+    """
+    Update an existing movie with the provided movie ID.
+
+    This function retrieves movie data from the request's JSON payload,
+    creates a movie object from the dictionary, and updates the movie
+    in the database.
+
+    Args:
+        movie_id (int): The ID of the movie to be updated.
+
+    Returns:
+        Response: A JSON response containing a message and the updated movie object,
+                  along with an HTTP status code 200.
+    """
+    movie_dict = request.get_json()
+    movie = Movie.from_dict(movie_dict)
+    movie.movie_id = movie_id
+    services.update_movie(movie)
+    return jsonify({'message': 'Movie updated', 'movie': movie.to_dict()}), 200
+
+@api_bp.route('/movies/<int:movie_id>', methods=['DELETE'])
+def remove_movie(movie_id):
+    """
+    Remove a movie by its movie ID.
+
+    This function deletes a movie from the database and returns a JSON response
+    indicating that the movie has been deleted.
+
+    Args:
+        movie_id (int): The ID of the movie to be removed.
+
+    Returns:
+        tuple: A tuple containing a JSON response with a message and an HTTP status code.
+    """
+    services.delete_movie(movie_id)
+    return jsonify({'message': 'Movie deleted'}), 200
+

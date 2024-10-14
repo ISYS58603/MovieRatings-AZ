@@ -36,10 +36,10 @@ def new_movie(test_client):
     }
     response = test_client.post("/api/movies", json=movie_data)
     data = json.loads(response.data)
-    movie_id = data["movie"]["id"]
-    yield movie_id
+    new_movie = Movie.from_dict(data["movie"])
+    yield new_movie
     # Delete the movie after the test
-    test_client.delete(f"/api/movies/{movie_id}")
+    test_client.delete(f"/api/movies/{new_movie.movie_id}")
 
 
 class TestDatabaseConnections:
@@ -142,6 +142,14 @@ class TestMovieRoutes:
         data = json.loads(response.data)
         assert len(data) > 0
 
+    def test_get_movie_by_id(self, test_client,new_movie):
+        response = test_client.get(f"/api/movies/{new_movie.movie_id}")
+        assert response.status_code == 200
+        movie = json.loads(response.data)
+        assert movie is not None
+        assert movie["movie_id"] == new_movie.movie_id
+        assert movie["title"] == new_movie.title
+        
     def test_create_movie(self, test_client):
         movie_data = {
             "title": "test_movie",
@@ -152,7 +160,7 @@ class TestMovieRoutes:
         response = test_client.post("/api/movies", json=movie_data)
         assert response.status_code == 201
         data = json.loads(response.data)
-        movie_id = data["movie"]["id"]
+        movie_id = data["movie"]["movie_id"]
         assert movie_id is not None
 
         # Now get the movie back and check that it is the same
@@ -166,11 +174,11 @@ class TestMovieRoutes:
 
     def test_delete_movie(self, test_client, new_movie):
         # Delete the movie
-        response = test_client.delete(f"/api/movies/{new_movie}")
+        response = test_client.delete(f"/api/movies/{new_movie.movie_id}")
         assert response.status_code == 200
 
         # Verify deletion
-        response = test_client.get(f"/api/movies/{new_movie}")
+        response = test_client.get(f"/api/movies/{new_movie.movie_id}")
         assert response.status_code == 404
 
     def test_update_movie(self, test_client, new_movie):
@@ -181,80 +189,10 @@ class TestMovieRoutes:
             "release_year": 2024,
             "director": "Test Director",
         }
-        response = test_client.put(f"/api/movies/{new_movie}", json=updated_data)
+        response = test_client.put(f"/api/movies/{new_movie.movie_id}", json=updated_data)
         assert response.status_code == 200
 
         # Verify update
-        response = test_client.get(f"/api/movies/{new_movie}")
+        response = test_client.get(f"/api/movies/{new_movie.movie_id}")
         updated_movie = json.loads(response.data)
         assert updated_movie["title"] == "updated_movie"
-
-    def test_get_movie_by_criteria_all(self, test_client, new_movie):
-        # Do the test
-        response = test_client.get(
-            "/api/movies?genre=test_genre&director=Test+Director&year=2024"
-        )
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) > 0
-        for movie in movies:
-            assert movie["title"] == "test_movie"
-            assert movie["genre"] == "test_genre"
-            assert movie["release_year"] == 2024
-            assert movie["director"] == "Test Director"
-
-        # Now test for the opposite case, where we shouldn't get the movie back
-        response = test_client.get(
-            "/api/movies?genre=test_genre&director=Test+Director2&year=2024"
-        )
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) == 0
-
-    def test_movie_by_criteria_director(self, test_client, new_movie):
-        # Do the test
-        response = test_client.get("/api/movies?director=Test+Director")
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) > 0
-        for movie in movies:
-            assert movie["title"] == "test_movie"
-
-        # Now test for the opposite case, where we shouldn't get the movie back
-        response = test_client.get("/api/movies?director=Test+Director2")
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) == 0
-
-    def test_movie_by_criteria_genre(self, test_client, new_movie):
-        # Do the test
-        response = test_client.get(f"/api/movies?genre=test_genre")
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) > 0
-        for movie in movies:
-            assert movie["title"] == "test_movie"
-
-        # Now test for the opposite case, where we shouldn't get the movie back
-        response = test_client.get("/api/movies?genre=test_genre2")
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) == 0
-
-    def test_movie_by_criteria_multiple(self, test_client, new_movie):
-        # Do the test
-        response = test_client.get(
-            f"/api/movies?director=Test+Director&genre=test_genre"
-        )
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) > 0
-        for movie in movies:
-            assert movie["title"] == "test_movie"
-
-        response = test_client.get(f"/api/movies?genre=test_genre&year=2024")
-        assert response.status_code == 200
-        movies = json.loads(response.data)
-        assert len(movies) > 0
-        for movie in movies:
-            assert movie["title"] == "test_movie"

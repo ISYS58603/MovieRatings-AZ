@@ -269,7 +269,7 @@ def update_movie(movie: Movie):
     query = "UPDATE movies SET title = ?, genre = ?, release_year = ?, director = ? WHERE movie_id = ?"
     cursor.execute(
         query,
-        (movie.title, movie.genre, movie.release_year, movie.director, movie.id),
+        (movie.title, movie.genre, movie.release_year, movie.director, movie.movie_id),
     )
 
     conn.commit()
