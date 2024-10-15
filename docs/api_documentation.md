@@ -4,147 +4,247 @@ This document provides an overview of the API routes for managing users and movi
 
 ## Base URL
 The base URL for all the routes is `/api`.
+Here's a Markdown version of your OpenAPI specification:
 
-## API Endpoints
+## Endpoints
 
-### 1. Home Endpoint
+### Home Endpoint
+
 - **URL**: `/`
 - **Method**: `GET`
-- **Description**: Displays a welcome message for the API.
+- **Summary**: Displays a welcome message for the API.
 - **Response**:
-  - **200 OK**: Returns a plain text message: "Welcome to the User API!"
+  - `200 OK`: Welcome message.
 
-### 2. Test Connection Endpoint
-- **URL**: `/api/connection`
+### Connection Test
+
+- **URL**: `/connection`
 - **Method**: `GET`
-- **Description**: Tests the connection to the API.
+- **Summary**: Test the connection to the API and database.
 - **Response**:
-  - **200 OK**: Returns a JSON message indicating a successful connection: `{"message": "Successfully connected to the API"}`
+  - `200 OK`: JSON response indicating successful connection.
+  - **Example**: `{ "message": "Successfully connected to the API" }`
 
-### 3. User Routes
+---
 
-#### Get All Users
-- **URL**: `/api/users`
+## User Endpoints
+
+### Get All Users
+
+- **URL**: `/users`
 - **Method**: `GET`
-- **Description**: Retrieve all users or filter users by name using query parameters.
-- **Query Parameters**:
-  - `starts_with` (optional): Filter users whose names start with this string.
-  - `contains` (optional): Filter users whose names contain this string.
+- **Summary**: Retrieve all users or filter by name.
+- **Parameters**:
+  - **`starts_with`** (optional): Filter users whose names start with the given string.
+  - **`contains`** (optional): Filter users whose names contain the given string.
 - **Response**:
-  - **200 OK**: Returns a list of users.
+  - `200 OK`: List of users.
 
-#### Get User by ID
-- **URL**: `/api/users/{user_id}`
-- **Method**: `GET`
-- **Description**: Retrieve a user by their unique ID.
-- **Path Parameter**:
-  - `user_id` (required): The ID of the user to retrieve.
-- **Response**:
-  - **200 OK**: Returns user details.
-  - **404 Not Found**: User not found.
+### Add a New User
 
-#### Add New User
-- **URL**: `/api/users`
+- **URL**: `/users`
 - **Method**: `POST`
-- **Description**: Add a new user to the system.
+- **Summary**: Add a new user to the system.
 - **Request Body**:
-  ```json
-  {
-    "username": "new_user",
-    "email": "new_user@example.com"
-  }
-  ```
+  - **`username`**: User's username.
+  - **`email`**: User's email.
 - **Response**:
-  - **201 Created**: Returns a message and details of the newly created user.
+  - `201 Created`: User added successfully.
+  - **Example**: `{ "message": "User added", "user": { ... } }`
 
-#### Update Existing User
-- **URL**: `/api/users/{user_id}`
+### Get User by ID
+
+- **URL**: `/users/{user_id}`
+- **Method**: `GET`
+- **Summary**: Retrieve user information by user ID.
+- **Parameters**:
+  - **`user_id`**: The unique identifier of the user.
+- **Response**:
+  - `200 OK`: User found.
+  - `404 Not Found`: User not found.
+
+### Update User by ID
+
+- **URL**: `/users/{user_id}`
 - **Method**: `PUT`
-- **Description**: Update an existing user.
-- **Path Parameter**:
-  - `user_id` (required): The ID of the user to update.
+- **Summary**: Update an existing user.
+- **Parameters**:
+  - **`user_id`**: The unique identifier of the user.
 - **Request Body**:
-  ```json
-  {
-    "username": "updated_user",
-    "email": "updated_user@example.com"
-  }
-  ```
+  - **`username`**: User's new username.
+  - **`email`**: User's new email.
 - **Response**:
-  - **200 OK**: Returns a message and updated user details.
+  - `200 OK`: User updated successfully.
 
-#### Delete User
-- **URL**: `/api/users/{user_id}`
+### Delete User by ID
+
+- **URL**: `/users/{user_id}`
 - **Method**: `DELETE`
-- **Description**: Delete a user by their ID.
-- **Path Parameter**:
-  - `user_id` (required): The ID of the user to delete.
+- **Summary**: Remove a user by their ID.
+- **Parameters**:
+  - **`user_id`**: The unique identifier of the user.
 - **Response**:
-  - **200 OK**: Returns a message indicating the user was deleted.
+  - `200 OK`: User deleted successfully.
 
-### 4. Movie Routes
+### Get All Ratings for a User
 
-#### Get All Movies
-- **URL**: `/api/movies`
+- **URL**: `/users/{user_id}/ratings`
 - **Method**: `GET`
-- **Description**: Retrieve all movies or filter movies by title.
-- **Query Parameter**:
-  - `title` (optional): Filter movies by title.
+- **Summary**: Retrieve all ratings for a specific user.
+- **Parameters**:
+  - **`user_id`**: The unique identifier of the user.
 - **Response**:
-  - **200 OK**: Returns a list of movies.
+  - `501 Not Implemented`: Currently not implemented.
 
-#### Get Movie by ID
-- **URL**: `/api/movies/{movie_id}`
+---
+
+## Movie Endpoints
+
+### Get All Movies
+
+- **URL**: `/movies`
 - **Method**: `GET`
-- **Description**: Retrieve a movie by its unique ID.
-- **Path Parameter**:
-  - `movie_id` (required): The ID of the movie to retrieve.
+- **Summary**: Retrieve all movies or filter by title.
+- **Parameters**:
+  - **`title`** (optional): Filter movies by title.
 - **Response**:
-  - **200 OK**: Returns movie details.
-  - **404 Not Found**: Movie not found.
+  - `200 OK`: List of movies.
 
-#### Add New Movie
-- **URL**: `/api/movies`
+### Add a New Movie
+
+- **URL**: `/movies`
 - **Method**: `POST`
-- **Description**: Add a new movie to the system.
+- **Summary**: Add a new movie to the system.
 - **Request Body**:
-  ```json
-  {
-    "title": "Inception",
-    "genre": "Sci-Fi",
-    "release_year": 2010,
-    "director": "Christopher Nolan"
-  }
-  ```
+  - **`title`**: Movie title.
+  - **`genre`**: Genre of the movie.
+  - **`release_year`**: Year the movie was released.
+  - **`director`**: Director of the movie.
 - **Response**:
-  - **201 Created**: Returns a message and details of the newly created movie.
+  - `201 Created`: Movie added successfully.
 
-#### Update Existing Movie
-- **URL**: `/api/movies/{movie_id}`
+### Get Movie by ID
+
+- **URL**: `/movies/{movie_id}`
+- **Method**: `GET`
+- **Summary**: Retrieve movie information by movie ID.
+- **Parameters**:
+  - **`movie_id`**: The unique identifier of the movie.
+- **Response**:
+  - `200 OK`: Movie found.
+  - `404 Not Found`: Movie not found.
+
+### Update Movie by ID
+
+- **URL**: `/movies/{movie_id}`
 - **Method**: `PUT`
-- **Description**: Update an existing movie.
-- **Path Parameter**:
-  - `movie_id` (required): The ID of the movie to update.
+- **Summary**: Update an existing movie.
+- **Parameters**:
+  - **`movie_id`**: The unique identifier of the movie.
 - **Request Body**:
-  ```json
-  {
-    "title": "Updated Movie Title",
-    "genre": "Updated Genre",
-    "release_year": 2024,
-    "director": "Updated Director"
-  }
-  ```
+  - **`title`**: New title.
+  - **`genre`**: New genre.
+  - **`release_year`**: New release year.
+  - **`director`**: New director.
 - **Response**:
-  - **200 OK**: Returns a message and updated movie details.
+  - `200 OK`: Movie updated successfully.
 
-#### Delete Movie
-- **URL**: `/api/movies/{movie_id}`
+### Delete Movie by ID
+
+- **URL**: `/movies/{movie_id}`
 - **Method**: `DELETE`
-- **Description**: Delete a movie by its ID.
-- **Path Parameter**:
-  - `movie_id` (required): The ID of the movie to delete.
+- **Summary**: Remove a movie by its ID.
+- **Parameters**:
+  - **`movie_id`**: The unique identifier of the movie.
 - **Response**:
-  - **200 OK**: Returns a message indicating the movie was deleted.
+  - `200 OK`: Movie deleted successfully.
+
+### Get All Ratings for a Movie
+
+- **URL**: `/movies/{movie_id}/ratings`
+- **Method**: `GET`
+- **Summary**: Retrieve all ratings for a specific movie by movie ID.
+- **Parameters**:
+  - **`movie_id`**: The unique identifier of the movie.
+- **Response**:
+  - `200 OK`: List of ratings for the movie.
+
+---
+
+## Rating Endpoints
+
+### Add a New Rating
+
+- **URL**: `/ratings`
+- **Method**: `POST`
+- **Summary**: Add a new rating to the system.
+- **Request Body**:
+  - **`user_id`**: ID of the user providing the rating.
+  - **`movie_id`**: ID of the movie being rated.
+  - **`rating`**: The rating score.
+  - **`review`**: Text review.
+- **Response**:
+  - `201 Created`: Rating added successfully.
+
+### Get Rating by ID
+
+- **URL**: `/ratings/{rating_id}`
+- **Method**: `GET`
+- **Summary**: Retrieve rating information by rating ID.
+- **Parameters**:
+  - **`rating_id`**: The unique identifier of the rating.
+- **Response**:
+  - `200 OK`: Rating found.
+  - `404 Not Found`: Rating not found.
+
+### Update Rating by ID
+
+- **URL**: `/ratings/{rating_id}`
+- **Method**: `PUT`
+- **Summary**: Update an existing rating.
+- **Parameters**:
+  - **`rating_id`**: The unique identifier of the rating.
+- **Request Body**:
+  - **`rating`**: New rating score.
+  - **`review`**: New review text.
+- **Response**:
+  - `200 OK`: Rating updated successfully.
+
+### Delete Rating by ID
+
+- **URL**: `/ratings/{rating_id}`
+- **Method**: `DELETE`
+- **Summary**: Remove a rating by its ID.
+- **Parameters**:
+  - **`rating_id`**: The unique identifier of the rating.
+- **Response**:
+  - `200 OK`: Rating deleted successfully.
+
+---
+
+## Schemas
+
+### User
+
+- **`id`**: integer, example: `1`
+- **`username`**: string, example: `jane_doe`
+- **`email`**: string, example: `jane.doe@example.com`
+
+### Movie
+
+- **`movie_id`**: integer, example: `1`
+- **`title`**: string, example: `Inception`
+- **`genre`**: string, example: `Sci-Fi`
+- **`release_year`**: integer, example: `2010`
+- **`director`**: string, example: `Christopher Nolan`
+
+### Rating
+
+- **`rating_id`**: integer, example: `101`
+- **`user_id`**: integer, example: `1`
+- **`movie_id`**: integer, example: `1`
+- **`rating`**: float, example: `4.5`
+- **`review`**: string, example: `Great movie, loved the plot!`
 
 ## Swagger UI Documentation
 
