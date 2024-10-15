@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: User and Movie API
-  description: API for managing users and movies
-  version: 1.0.0
+  description: API for managing users, movies, and ratings, including CRUD operations and rating functionalities.
+  version: 1.1.0
 
 servers:
   - url: /api
@@ -11,7 +11,7 @@ paths:
   /:
     get:
       summary: Home endpoint
-      description: Welcome message for the User API
+      description: Displays a welcome message for the API.
       responses:
         '200':
           description: Welcome message
@@ -22,8 +22,8 @@ paths:
 
   /connection:
     get:
-      summary: Test API connection
-      description: Test the connection to the API.
+      summary: Test connection to the database
+      description: Test the connection to the API and database.
       responses:
         '200':
           description: Successfully connected
@@ -43,13 +43,13 @@ paths:
       parameters:
         - name: starts_with
           in: query
-          description: Filter users whose names start with a given string
+          description: Filter users whose names start with the given string.
           required: false
           schema:
             type: string
         - name: contains
           in: query
-          description: Filter users whose names contain a given string
+          description: Filter users whose names contain the given string.
           required: false
           schema:
             type: string
@@ -163,6 +163,25 @@ paths:
                   message:
                     type: string
                     example: User deleted
+
+  /users/{user_id}/ratings:
+    get:
+      summary: Get all ratings for a user
+      description: Retrieve all ratings for a specific user by their user ID.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '501':
+          description: Not implemented
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Not implemented yet
 
   /movies:
     get:
@@ -286,6 +305,128 @@ paths:
                     type: string
                     example: Movie deleted
 
+  /movies/{movie_id}/ratings:
+    get:
+      summary: Get all ratings for a movie
+      description: Retrieve all ratings for a specific movie by movie ID.
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of ratings for the movie
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rating'
+
+  /ratings:
+    post:
+      summary: Add a new rating
+      description: Add a new rating to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingInput'
+      responses:
+        '201':
+          description: Rating added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Rating added
+                  rating:
+                    $ref: '#/components/schemas/Rating'
+
+  /ratings/{rating_id}:
+    get:
+      summary: Get rating by ID
+      description: Retrieve rating information by rating ID.
+      parameters:
+        - name: rating_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rating found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '404':
+          description: Rating not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Rating not found
+
+    put:
+      summary: Update rating by ID
+      description: Update an existing rating with the provided rating ID.
+      parameters:
+        - name: rating_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingInput'
+      responses:
+        '200':
+          description: Rating updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Rating updated
+                  rating:
+                    $ref: '#/components/schemas/Rating'
+
+    delete:
+      summary: Delete rating by ID
+      description: Remove a rating by its rating ID.
+      parameters:
+        - name: rating_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Rating deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Rating deleted
+
 components:
   schemas:
     User:
@@ -338,4 +479,37 @@ components:
         release_year:
           type: integer
         director:
+          type: string
+
+    Rating:
+      type: object
+      properties:
+        rating_id:
+          type: integer
+          example: 101
+        user_id:
+          type: integer
+          example: 1
+        movie_id:
+          type: integer
+          example: 1
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        review:
+          type: string
+          example: Great movie, loved the plot!
+
+    RatingInput:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        movie_id:
+          type: integer
+        rating:
+          type: number
+          format: float
+        review:
           type: string

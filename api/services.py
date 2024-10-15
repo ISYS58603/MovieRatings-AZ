@@ -413,6 +413,8 @@ def convert_rows_to_rating_list(ratings):
         list of Rating: A list of Rating objects created from the input dictionaries.
     """
     all_ratings = []
+    if ratings is None:
+        return None
     for rating in ratings:
         rating = Rating(
             rating_id=rating["rating_id"],
@@ -445,6 +447,26 @@ def create_rating(rating: Rating) -> int:
 
     return rating_id
 
+def update_rating(rating: Rating):
+    """
+    Update a rating in the database.
+    Args:
+        rating (Rating): A Rating object containing the updated rating information.
+    Returns:
+        None
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "UPDATE ratings SET user_id = ?, movie_id = ?, rating = ?, review = ?, date = ? WHERE rating_id = ?"
+    cursor.execute(
+        query,
+        (rating.user_id, rating.movie_id, rating.rating, rating.review, rating.date, rating.rating_id),
+    )
+
+    conn.commit()
+    conn.close()
+
 def get_rating_by_id(rating_id: int) -> Rating:
     """
     Retrieve a rating from the database by its ID.
@@ -459,10 +481,10 @@ def get_rating_by_id(rating_id: int) -> Rating:
     query = "SELECT rating_id,user_id,movie_id,rating,review,date FROM ratings WHERE rating_id = ?"
     cursor.execute(query, (rating_id,))
 
-    rating = cursor.fetchone()
+    ratings = cursor.fetchall()
     conn.close()
 
-    rating_list = convert_rows_to_rating_list([rating])
+    rating_list = convert_rows_to_rating_list(ratings)
 
     if len(rating_list) == 0:
         return None
@@ -498,6 +520,25 @@ def get_movie_ratings(movie_id: int) -> List[Rating]:
 
     query = "SELECT rating_id, user_id, movie_id, rating,review,date FROM ratings WHERE movie_id = ?"
     cursor.execute(query, (movie_id,))
+
+    ratings = cursor.fetchall()
+    conn.close()
+
+    return convert_rows_to_rating_list(ratings)
+
+def get_user_ratings(user_id: int) -> List[Rating]:
+    """
+    Retrieve all ratings by a specific user.
+    Args:
+        user_id (int): The unique identifier of the user.
+    Returns:
+        List[Rating]: A list of Rating objects representing the ratings by the user.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT rating_id, user_id, movie_id, rating,review,date FROM ratings WHERE user_id = ?"
+    cursor.execute(query, (user_id,))
 
     ratings = cursor.fetchall()
     conn.close()

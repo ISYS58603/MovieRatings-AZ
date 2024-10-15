@@ -1,6 +1,6 @@
 from flask import jsonify, request, Blueprint
 import api.services as services
-from api.models import User, create_user_from_dict, Movie
+from api.models import User, create_user_from_dict, Movie, Rating
 
 # Create a Blueprint instance
 # This will allow us to group related routes together. All the routes in this file will be part of the 'api' Blueprint.
@@ -73,6 +73,22 @@ def lookup_user_by_id(user_id):
         return jsonify(user.to_dict()), 200
     return jsonify({'message': 'User not found'}), 404
 
+@api_bp.route('/users/<int:user_id>/ratings', methods=['GET'])
+def lookup_ratings_for_user(user_id):
+    """
+    Retrieve all ratings for a specific user by user ID.
+
+    Args:
+        user_id (int): The unique identifier of the user.
+
+    Returns:
+        tuple: A tuple containing a JSON response with all ratings for the user and an HTTP status code.
+    """
+    return jsonify('Not implemented yet'), 501
+    # ratings = services.get_user_ratings(user_id)
+    # rating_list = [rating.to_dict() for rating in ratings]
+    # rating_list.user_id = user_id
+    # return jsonify(rating_list), 200
 
 @api_bp.route('/users', methods=['POST'])
 def add_new_user():
@@ -248,3 +264,81 @@ def remove_movie(movie_id):
     """
     services.delete_movie(movie_id)
     return jsonify({'message': 'Movie deleted'}), 200
+
+# ---------------------------------------------------------
+# Ratings
+# ---------------------------------------------------------
+@api_bp.route('/ratings', methods=['POST'])
+def add_new_rating():
+    """
+    Adds a new rating to the system.
+
+    This function retrieves rating data from a JSON request, creates a new Rating object,
+    and adds it to the system using the create_rating function.
+
+    Returns:
+        Response: A JSON response containing a success message and the added rating,
+                  with a status code of 201 (Created).
+    """
+    new_rating_dict = request.get_json()
+    new_rating = Rating.from_dict(new_rating_dict)
+    new_rating_id = services.create_rating(new_rating)
+    new_rating.rating_id = new_rating_id
+    return jsonify({'message': 'Rating added', 'rating': new_rating.to_dict()}), 201
+
+@api_bp.route('/ratings/<int:rating_id>', methods=['PUT'])
+def update_existing_rating(rating_id):
+    """
+    Update an existing rating with the provided rating ID.
+
+    This function retrieves rating data from the request's JSON payload,
+    creates a rating object from the dictionary, and updates the rating
+    in the database.
+
+    Args:
+        rating_id (int): The ID of the rating to be updated.
+
+    Returns:
+        Response: A JSON response containing a message and the updated rating object,
+                  along with an HTTP status code 200.
+    """
+    rating_dict = request.get_json()
+    rating = Rating.from_dict(rating_dict)
+    rating.rating_id = rating_id
+    services.update_rating(rating)
+    return jsonify({'message': 'Rating updated', 'rating': rating.to_dict()}), 200
+
+@api_bp.route('/ratings/<int:rating_id>', methods=['DELETE'])
+def remove_rating(rating_id):
+    """
+    Remove a rating by its rating ID.
+
+    This function deletes a rating from the database and returns a JSON response
+    indicating that the rating has been deleted.
+
+    Args:
+        rating_id (int): The ID of the rating to be removed.
+
+    Returns:
+        tuple: A tuple containing a JSON response with a message and an HTTP status code.
+    """
+    services.delete_rating(rating_id)
+    return jsonify({'message': 'Rating deleted'}), 200
+
+@api_bp.route('/ratings/<int:rating_id>', methods=['GET'])
+def lookup_rating_by_id(rating_id):
+    """
+    Retrieve rating information by rating ID.
+
+    Args:
+        rating_id (int): The unique identifier of the rating.
+
+    Returns:
+        tuple: A tuple containing a JSON response and an HTTP status code.
+            - If the rating is found, returns a JSON object with rating information and status code 200.
+            - If the rating is not found, returns a JSON object with an error message and status code 404.
+    """
+    rating = services.get_rating_by_id(rating_id)
+    if rating:
+        return jsonify(rating.to_dict()), 200
+    return jsonify({'message': 'Rating not found'}), 404

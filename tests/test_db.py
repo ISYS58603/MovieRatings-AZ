@@ -22,7 +22,7 @@ def known_user():
 
 
 @pytest.fixture
-def new_movie():
+def known_movie():
     # Create a new movie for testing purposes
     movie = Movie(
         None, "test_movie", "test_genre", release_year=2024, director="Test Director"
@@ -129,8 +129,8 @@ def test_get_all_movies():
     assert len(all_movies) > 0
 
 
-def test_get_movie_by_id(new_movie):
-    movie = services.get_movie_by_id(new_movie.movie_id)
+def test_get_movie_by_id(known_movie):
+    movie = services.get_movie_by_id(known_movie.movie_id)
     assert movie is not None
     assert movie.title == "test_movie"
     assert movie.genre == "test_genre"
@@ -154,22 +154,22 @@ def test_create_movie():
     services.delete_movie(movie.movie_id)
 
 
-def test_delete_movie(new_movie):
+def test_delete_movie(known_movie):
     # Delete the movie
-    services.delete_movie(new_movie.movie_id)
-    deleted_movie = services.get_movie_by_id(new_movie.movie_id)
+    services.delete_movie(known_movie.movie_id)
+    deleted_movie = services.get_movie_by_id(known_movie.movie_id)
     assert deleted_movie is None
 
 
-def test_update_movie(new_movie):
+def test_update_movie(known_movie):
     # Update the movie
-    new_movie.title = "updated_movie"
-    services.update_movie(new_movie)
-    updated_movie = services.get_movie_by_id(new_movie.movie_id)
+    known_movie.title = "updated_movie"
+    services.update_movie(known_movie)
+    updated_movie = services.get_movie_by_id(known_movie.movie_id)
     assert updated_movie.title == "updated_movie"
 
 
-def test_get_movie_by_criteria_all(new_movie):
+def test_get_movie_by_criteria_all(known_movie):
     # Do the test
     movies = services.get_movies_matching_criteria(
         genre="test_genre", director="Test Director", year=2024
@@ -188,7 +188,7 @@ def test_get_movie_by_criteria_all(new_movie):
     assert len(movies) == 0
 
 
-def test_movie_by_criteria_director(new_movie):
+def test_movie_by_criteria_director(known_movie):
     # Do the test
     movies = services.get_movies_matching_criteria(director="Test Director")
     assert len(movies) > 0
@@ -200,46 +200,47 @@ def test_movie_by_criteria_director(new_movie):
     assert len(movies) == 0
 
 
-def test_movie_by_criteria_genre(new_movie):
+def test_movie_by_criteria_genre(known_movie):
     # Do the test
-    movies = services.get_movies_matching_criteria(genre=new_movie.genre)
+    movies = services.get_movies_matching_criteria(genre=known_movie.genre)
     assert len(movies) > 0
     for movie in movies:
-        assert movie.title == new_movie.title
+        assert movie.title == known_movie.title
 
     # Now test for the opposite case, where we shouldn't get the movie back
     movies = services.get_movies_matching_criteria(genre="test_genre2")
     assert len(movies) == 0
 
-
-def test_movie_by_criteria_multiple(new_movie):
+def test_movie_by_criteria_multiple(known_movie):
     # Do the test
     movies = services.get_movies_matching_criteria(
-        director=new_movie.director, genre=new_movie.genre
+        director=known_movie.director, genre=known_movie.genre
     )
     assert len(movies) > 0
     for movie in movies:
-        assert movie.title == new_movie.title
+        assert movie.title == known_movie.title
 
     movies = services.get_movies_matching_criteria(
-        genre=new_movie.genre,
-        year=new_movie.release_year,
+        genre=known_movie.genre,
+        year=known_movie.release_year,
     )
     assert len(movies) > 0
     for movie in movies:
-        assert movie.title == new_movie.title
-
+        assert movie.title == known_movie.title
+# ---------------------------------------------------------
+# This set of tests will test the database connection and the services module for the RATINGS table
+# ---------------------------------------------------------
 def test_get_rating_by_id(new_rating):
     # Get the rating by id
     rating = services.get_rating_by_id(new_rating.rating_id)
     assert rating is not None
     assert rating.rating_id == new_rating.rating_id
 
-def test_get_movie_ratings(new_movie):
+def test_get_movie_ratings(known_movie):
     # Create a sample rating
     sample_rating = Rating(
         user_id=101,
-        movie_id=new_movie.movie_id,
+        movie_id=known_movie.movie_id,
         rating=5,
         review="Great movie!",
         date="1/1/2024",
@@ -249,7 +250,7 @@ def test_get_movie_ratings(new_movie):
     # Create a sample rating
     sample_rating2 = Rating(
         user_id=101,
-        movie_id=new_movie.movie_id,
+        movie_id=known_movie.movie_id,
         rating=3,
         review="So so movie!",
         date="2/1/2024",
@@ -257,10 +258,74 @@ def test_get_movie_ratings(new_movie):
     sample_rating2.rating_id = services.create_rating(sample_rating2)
 
     # Get the ratings for the movie
-    ratings = services.get_movie_ratings(new_movie.movie_id)
+    ratings = services.get_movie_ratings(known_movie.movie_id)
     assert len(ratings) > 0
     for rating in ratings:
-        assert rating.movie_id == new_movie.movie_id
+        assert rating.movie_id == known_movie.movie_id
+
+    # Clean up
+    services.delete_rating(sample_rating.rating_id)
+    services.delete_rating(sample_rating2.rating_id)
+
+def test_delete_rating(new_rating):
+    # Delete the rating
+    services.delete_rating(new_rating.rating_id)
+    deleted_rating = services.get_rating_by_id(new_rating.rating_id)
+    assert deleted_rating is None
+    
+def test_update_rating(new_rating):
+    # Update the rating
+    new_rating.rating = 4
+    services.update_rating(new_rating)
+    updated_rating = services.get_rating_by_id(new_rating.rating_id)
+    assert updated_rating.rating == 4
+    
+def test_create_rating():
+    rating = Rating(
+        user_id=101,
+        movie_id=1,
+        rating=5,
+        review="Great movie!",
+        date="2022-01-01",
+    )
+    rating.rating_id = services.create_rating(rating)
+    assert rating.rating_id is not None
+
+    # Now get the rating back and check that it is the same
+    retrieved_rating = services.get_rating_by_id(rating.rating_id)
+    assert retrieved_rating.user_id == rating.user_id
+    assert retrieved_rating.movie_id == rating.movie_id
+    assert retrieved_rating.rating == rating.rating
+    assert retrieved_rating.review == rating.review
+    assert retrieved_rating.date == rating.date
+    services.delete_rating(rating.rating_id)
+
+def test_get_user_ratings(known_user, known_movie):
+    # Create a sample rating
+    sample_rating = Rating(
+        user_id=known_user.id,
+        movie_id=known_movie.movie_id,
+        rating=5,
+        review="Great movie!",
+        date="1/1/2024",
+    )
+    sample_rating.rating_id = services.create_rating(sample_rating)
+
+    # Create a sample rating
+    sample_rating2 = Rating(
+        user_id=known_user.id,
+        movie_id=known_movie.movie_id,
+        rating=3,
+        review="So so movie!",
+        date="2/1/2024",
+    )
+    sample_rating2.rating_id = services.create_rating(sample_rating2)
+
+    # Get the ratings for the user
+    ratings = services.get_user_ratings(known_user.id)
+    assert len(ratings) > 0
+    for rating in ratings:
+        assert rating.user_id == known_user.id
 
     # Clean up
     services.delete_rating(sample_rating.rating_id)
