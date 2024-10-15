@@ -24,6 +24,17 @@ def test_connection():
     """
     return jsonify({'message': 'Successfully connected to the API'}), 200
 
+@api_bp.route('/connection')
+def test_connection():
+    """
+    Test the database connection.
+
+    Returns:
+        str: A message indicating that the connection was successful.
+    """
+    services.get_db_connection()
+    return "Connection successful!"
+
 # ---------------------------------------------------------
 # Users
 # ---------------------------------------------------------
@@ -162,7 +173,7 @@ def lookup_movie_by_id(movie_id):
 
     Args:
         movie_id (int): The unique identifier of the movie.
-
+        
     Returns:
         tuple: A tuple containing a JSON response and an HTTP status code.
             - If the movie is found, returns a JSON object with movie information and status code 200.
@@ -172,6 +183,23 @@ def lookup_movie_by_id(movie_id):
     if movie:
         return jsonify(movie.to_dict()), 200
     return jsonify({'message': 'Movie not found'}), 404
+
+@api_bp.route('/movies/<int:movie_id>/ratings', methods=['GET'])
+def lookup_ratings_for_movie(movie_id): 
+    """
+    Retrieve all ratings for a specific movie by movie ID.
+
+    Args:
+        movie_id (int): The unique identifier of the movie.
+
+    Returns:
+        tuple: A tuple containing a JSON response with all ratings for the movie and an HTTP status code.
+    """
+    ratings = services.get_movie_ratings(movie_id)
+    rating_list = [rating.to_dict() for rating in ratings]
+    rating_list.movie_id = movie_id
+    return jsonify(rating_list), 200
+
 
 @api_bp.route('/movies', methods=['POST'])
 def add_new_movie():
@@ -229,4 +257,3 @@ def remove_movie(movie_id):
     """
     services.delete_movie(movie_id)
     return jsonify({'message': 'Movie deleted'}), 200
-

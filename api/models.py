@@ -22,7 +22,11 @@ class User:
 
 # This function will take a dictionary and return a User object
 def create_user_from_dict( data: dict) -> User:
-        return User(data['id'], data['username'], data['email'])
+    # In this case, we want to be able to create a User object from a dictionary
+    # but not all dictionaries will have an id, so we'll use the get method to return None if it doesn't exist
+    # This is useful for creating new objects, where the id will be assigned by the database
+    # It's also useful for creating objects from JSON data, where the id may not be present
+    return User(data.get('id',None), data['username'], data['email'])
 
 class Movie:
 
@@ -32,20 +36,25 @@ class Movie:
         self.genre = genre
         self.release_year = release_year
         self.director = director
+        self.ratings = []
 
     def __repr__(self):
         return f'<Movie {self.movie_id} - {self.title}>'
 
     # This function will return a dictionary representation of the Movie object
     # This is useful for converting the object to JSON
+    # If the ratings attribute is a list of Rating objects, we would need to convert them to dictionaries as well
     def to_dict(self):
-        return {
+        movie_dict = {
             'movie_id': self.movie_id,
             'title': self.title,
             'genre': self.genre,
             'release_year': self.release_year,
             'director': self.director
         }
+        if len(self.ratings) > 0:
+            movie_dict['ratings'] = [rating.to_dict() for rating in self.ratings]
+        return movie_dict
 
     # This function will take a dictionary and return a Movie object, this is useful to convert JSON to an object
     # This is a bit more complex syntax than the User and Ratings classes, this is what we call a class method
@@ -72,19 +81,19 @@ class Rating:
 
     def __init__(
         self,
-        rating_id: int,
         user_id: int,
-        movie_id: int,
         rating: int,
         review: str,
         date: str,
+        movie_id: int = None,
+        rating_id: int = None,
     ):
-        self.rating_id = rating_id
         self.user_id = user_id
-        self.movie_id = movie_id
         self.rating = rating
         self.review = review
         self.date = date
+        self.movie_id = movie_id
+        self.rating_id = rating_id
 
     def __repr__(self):
         return f"<Rating {self.rating_id}>"
@@ -105,21 +114,10 @@ class Rating:
     @classmethod
     def from_dict(cls, data: dict) -> 'Rating':
         return cls(
-            rating_id=data["rating_id"],
+            rating_id=data.get("rating_id", None),
             user_id=data["user_id"],
             movie_id=data["movie_id"],
             rating=data["rating"],
             review=data["review"],
             date=data["date"],
         )
-
-# This function will take a dictionary and return a Rating object
-def create_rating_from_dict(data: dict) -> Rating:
-    return Rating(
-        data["rating_id"],
-        data["user_id"],
-        data["movie_id"],
-        data["rating"],
-        data["review"],
-        data["date"],
-    )

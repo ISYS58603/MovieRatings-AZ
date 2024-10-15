@@ -389,15 +389,17 @@ def get_movies_matching_criteria(genre: str ="", director: str ="", year: int=0)
     if year > 0:
         where_clauses.append("release_year = ?")
         params.append(year)
-    
+
     where_clause = " AND ".join(where_clauses) # Join the WHERE clauses with an AND statement
     query += where_clause
     movies = run_query(query, params=params)
     return convert_rows_to_movie_list(movies)
-    
+
 # ---------------------------------------------------------
 # Ratings
 # ---------------------------------------------------------
+
+
 def convert_rows_to_rating_list(ratings):
     """
     Converts a list of rating dictionaries to a list of Rating objects.
@@ -413,12 +415,91 @@ def convert_rows_to_rating_list(ratings):
     all_ratings = []
     for rating in ratings:
         rating = Rating(
-            rating["rating_id"],
-            rating["user_id"],
-            rating["movie_id"],
-            rating["rating"],
-            rating["review"],
-            rating["date"],
+            rating_id=rating["rating_id"],
+            user_id=rating["user_id"],
+            movie_id=rating["movie_id"],
+            rating=rating["rating"],
+            review=rating["review"],
+            date=rating["date"],
         )
         all_ratings.append(rating)
     return all_ratings
+
+def create_rating(rating: Rating) -> int:
+    """
+    Add a new rating to the database.
+    Args:
+        rating (Rating): A Rating object representing the rating to be added.
+    Returns:
+        int: The ID of the newly created rating.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "INSERT INTO ratings (user_id, movie_id, rating, review, date) VALUES (?, ?, ?, ?, ?)"
+    cursor.execute(query, (rating.user_id, rating.movie_id, rating.rating, rating.review, rating.date))
+    rating_id = cursor.lastrowid
+
+    conn.commit()
+    conn.close()
+
+    return rating_id
+
+def get_rating_by_id(rating_id: int) -> Rating:
+    """
+    Retrieve a rating from the database by its ID.
+    Args:
+        rating_id (int): The ID of the rating to retrieve.
+    Returns:
+        Rating: A Rating object representing the rating with the given ID.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT rating_id,user_id,movie_id,rating,review,date FROM ratings WHERE rating_id = ?"
+    cursor.execute(query, (rating_id,))
+
+    rating = cursor.fetchone()
+    conn.close()
+
+    rating_list = convert_rows_to_rating_list([rating])
+
+    if len(rating_list) == 0:
+        return None
+    return rating_list[0]
+
+def delete_rating(rating_id: int):
+    """
+    Delete a rating from the database by its ID.
+    Args:
+        rating_id (int): The ID of the rating to be deleted.
+    Returns:
+        None
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "DELETE FROM ratings WHERE rating_id = ?"
+    cursor.execute(query, (rating_id,))
+
+    conn.commit()
+    conn.close()
+
+def get_movie_ratings(movie_id: int) -> List[Rating]:
+    """
+    Retrieve all ratings for a specific movie by movie ID.
+    Args:
+        movie_id (int): The unique identifier of the movie.
+    Returns:
+        List[Rating]: A list of Rating objects representing the ratings for the movie.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT rating_id, user_id, movie_id, rating,review,date FROM ratings WHERE movie_id = ?"
+    cursor.execute(query, (movie_id,))
+
+    ratings = cursor.fetchall()
+    conn.close()
+
+    return convert_rows_to_rating_list(ratings)

@@ -32,6 +32,19 @@ def new_movie():
     # Delete the movie after the test
     services.delete_movie(movie.movie_id)
 
+@pytest.fixture
+def new_rating():
+    rating = Rating(
+        user_id=101,
+        movie_id=1,
+        rating=5,
+        review="Great movie!",
+        date="2022-01-01",
+    )
+    rating.rating_id = services.create_rating(rating)
+    yield rating
+    # Delete the rating after the test
+    services.delete_rating(rating.rating_id)
 
 def test_create_connection():
     conn = services.get_db_connection()
@@ -129,16 +142,16 @@ def test_create_movie():
     movie = Movie(
         None, "test_movie", "test_genre", release_year=2024, director="Test Director"
     )
-    movie.id = services.create_movie(movie)
-    assert movie.id is not None
+    movie.movie_id = services.create_movie(movie)
+    assert movie.movie_id is not None
 
     # Now get the movie back and check that it is the same
-    retrieved_movie = services.get_movie_by_id(movie.id)
+    retrieved_movie = services.get_movie_by_id(movie.movie_id)
     assert retrieved_movie.title == movie.title
     assert retrieved_movie.genre == movie.genre
     assert retrieved_movie.release_year == movie.release_year
     assert retrieved_movie.director == movie.director
-    services.delete_movie(movie.id)
+    services.delete_movie(movie.movie_id)
 
 
 def test_delete_movie(new_movie):
@@ -215,3 +228,40 @@ def test_movie_by_criteria_multiple(new_movie):
     assert len(movies) > 0
     for movie in movies:
         assert movie.title == new_movie.title
+
+def test_get_rating_by_id(new_rating):
+    # Get the rating by id
+    rating = services.get_rating_by_id(new_rating.rating_id)
+    assert rating is not None
+    assert rating.rating_id == new_rating.rating_id
+
+def test_get_movie_ratings(new_movie):
+    # Create a sample rating
+    sample_rating = Rating(
+        user_id=101,
+        movie_id=new_movie.movie_id,
+        rating=5,
+        review="Great movie!",
+        date="1/1/2024",
+    )
+    sample_rating.rating_id = services.create_rating(sample_rating)
+
+    # Create a sample rating
+    sample_rating2 = Rating(
+        user_id=101,
+        movie_id=new_movie.movie_id,
+        rating=3,
+        review="So so movie!",
+        date="2/1/2024",
+    )
+    sample_rating2.rating_id = services.create_rating(sample_rating2)
+
+    # Get the ratings for the movie
+    ratings = services.get_movie_ratings(new_movie.movie_id)
+    assert len(ratings) > 0
+    for rating in ratings:
+        assert rating.movie_id == new_movie.movie_id
+
+    # Clean up
+    services.delete_rating(sample_rating.rating_id)
+    services.delete_rating(sample_rating2.rating_id)
