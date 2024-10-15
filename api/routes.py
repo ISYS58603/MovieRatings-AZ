@@ -203,9 +203,10 @@ def lookup_ratings_for_movie(movie_id):
         tuple: A tuple containing a JSON response with all ratings for the movie and an HTTP status code.
     """
     ratings = services.get_movie_ratings(movie_id)
-    rating_list = [rating.to_dict() for rating in ratings]
-    rating_list.movie_id = movie_id
-    return jsonify(rating_list), 200
+    rating_list = ratings
+    movie = services.get_movie_by_id(movie_id)
+    movie.ratings = rating_list
+    return jsonify(movie.to_dict()), 200
 
 
 @api_bp.route('/movies', methods=['POST'])
