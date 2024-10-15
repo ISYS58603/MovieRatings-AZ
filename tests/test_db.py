@@ -136,8 +136,8 @@ def test_create_movie():
 
 def test_delete_movie(new_movie):
     # Delete the movie
-    services.delete_movie(new_movie.id)
-    deleted_movie = services.get_movie_by_id(new_movie.id)
+    services.delete_movie(new_movie.movie_id)
+    deleted_movie = services.get_movie_by_id(new_movie.movie_id)
     assert deleted_movie is None
 
 
@@ -145,7 +145,7 @@ def test_update_movie(new_movie):
     # Update the movie
     new_movie.title = "updated_movie"
     services.update_movie(new_movie)
-    updated_movie = services.get_movie_by_id(new_movie.id)
+    updated_movie = services.get_movie_by_id(new_movie.movie_id)
     assert updated_movie.title == "updated_movie"
 
 
