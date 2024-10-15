@@ -14,25 +14,16 @@ api_bp = Blueprint("api", __name__)
 def home():
     return 'Welcome to the User API!', 200
 
-@api_bp.route('/connection', methods=['GET'])
-def test_connection():
-    """
-    Test the connection to the api.
-
-    Returns:
-        tuple: A tuple containing a JSON response with a message and an HTTP status code.
-    """
-    return jsonify({'message': 'Successfully connected to the API'}), 200
-
 @api_bp.route('/connection')
 def test_connection():
     """
     Test the database connection.
 
     Returns:
-        str: A message indicating that the connection was successful.
+        tuple: A tuple containing a JSON response with a message and an HTTP status code.
     """
     services.get_db_connection()
+    return jsonify({'message': 'Successfully connected to the API'}), 200
     return "Connection successful!"
 
 # ---------------------------------------------------------
