@@ -14,6 +14,17 @@ api_bp = Blueprint("api", __name__)
 def home():
     return 'Welcome to the User API!'
 
+@api_bp.route('/connection')
+def test_connection():
+    """
+    Test the database connection.
+
+    Returns:
+        str: A message indicating that the connection was successful.
+    """
+    services.get_db_connection()
+    return "Connection successful!"
+
 # ---------------------------------------------------------
 # Users
 # ---------------------------------------------------------
