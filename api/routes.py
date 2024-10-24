@@ -39,12 +39,19 @@ def get_users():
     Returns:
         tuple: A tuple containing a JSON response with all users and an HTTP status code 200.
     """
+    # Example: /api/users?starts_with=A
+    # Example: /api/users?contains=John
+    # Example: /api/users
+    
+    # Get the query string parameter "starts_with" from the request if it's there
     user_name = request.args.get("starts_with")  # Accessing query string parameter
-    # If user_name is not provided, get all users
+    # If user_name is not provided
     if not user_name:
+        # See if the query string parameter "contains" is provided
         contains_user_name = request.args.get("contains")
         if contains_user_name:
             user_list = services.get_users_by_name(contains_user_name, starts_with=False)
+        # If neither "starts_with" nor "contains" is provided, get all users
         else:
             user_list = services.get_all_users()
     else:
@@ -68,6 +75,10 @@ def lookup_user_by_id(user_id):
             - If the user is found, returns a JSON object with user information and status code 200.
             - If the user is not found, returns a JSON object with an error message and status code 404.
     """
+    
+    # Example: /api/users/1
+    
+    # Using the database services to get the user by ID
     user = services.get_user_by_id(user_id)
     if user:
         return jsonify(user.to_dict()), 200
