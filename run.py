@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flasgger import Swagger # Only required if you want to use Swagger UI
 import yaml
 from api.routes import api_bp
@@ -18,6 +19,7 @@ from pathlib import Path
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
 
     # If you have provided an openapi.yaml file in the docs folder, load it
     # This will allow you to use Swagger UI to view and test your API endpoints
