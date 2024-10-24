@@ -36,6 +36,18 @@ def create_app():
     return app
 
 
+# This version of the create_app function does not use Swagger
+# If you do not want to use Swagger, you can use this version of the create_app function
+def create_app_no_swagger():
+    app = Flask(__name__)
+
+    # Register Blueprints
+    # Don't like the prefix?  You can remove it or change it to something else.
+    app.register_blueprint(api_bp, url_prefix="/api")
+
+    return app
+
+
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=5000)
