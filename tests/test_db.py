@@ -267,19 +267,27 @@ def test_get_movie_ratings(known_movie):
     services.delete_rating(sample_rating.rating_id)
     services.delete_rating(sample_rating2.rating_id)
 
+def test_get_rating_by_user(new_rating):
+    # Get the rating by user
+    ratings = services.get_user_ratings(new_rating.user_id)
+    assert len(ratings) > 0
+    for rating in ratings:
+        assert rating.user_id == new_rating.user_id
+
+
 def test_delete_rating(new_rating):
     # Delete the rating
     services.delete_rating(new_rating.rating_id)
     deleted_rating = services.get_rating_by_id(new_rating.rating_id)
     assert deleted_rating is None
-    
+
 def test_update_rating(new_rating):
     # Update the rating
     new_rating.rating = 4
     services.update_rating(new_rating)
     updated_rating = services.get_rating_by_id(new_rating.rating_id)
     assert updated_rating.rating == 4
-    
+
 def test_create_rating():
     rating = Rating(
         user_id=101,
