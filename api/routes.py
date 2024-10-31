@@ -103,11 +103,9 @@ def lookup_ratings_for_user(user_id):
     Returns:
         tuple: A tuple containing a JSON response with all ratings for the user and an HTTP status code.
     """
-    return jsonify('Not implemented yet'), 501
-    # ratings = services.get_user_ratings(user_id)
-    # rating_list = [rating.to_dict() for rating in ratings]
-    # rating_list.user_id = user_id
-    # return jsonify(rating_list), 200
+    ratings = services.get_user_ratings(user_id)
+    rating_list = [rating.to_dict() for rating in ratings]
+    return jsonify(rating_list), 200
 
 @api_bp.route('/users', methods=['POST'])
 def add_new_user():
