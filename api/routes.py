@@ -105,7 +105,8 @@ def lookup_ratings_for_user(user_id):
     """
     ratings = services.get_user_ratings(user_id)
     rating_list = [rating.to_dict() for rating in ratings]
-    return jsonify(rating_list), 200
+    ratings_dict = {'user_id': user_id, 'ratings': rating_list}
+    return jsonify(ratings_dict), 200
 
 @api_bp.route('/users', methods=['POST'])
 def add_new_user():
