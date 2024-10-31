@@ -33,7 +33,6 @@ def test_connection():
     """
     services.get_db_connection()
     return jsonify({'message': 'Successfully connected to the API'}), 200
-    return "Connection successful!"
 
 # ---------------------------------------------------------
 # Users
