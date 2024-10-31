@@ -1,6 +1,7 @@
 from flask import jsonify, request, Blueprint
 import api.services as services
 from api.models import User, create_user_from_dict, Movie, Rating
+from datetime import datetime
 
 # Create a Blueprint instance
 # This will allow us to group related routes together. All the routes in this file will be part of the 'api' Blueprint.
@@ -12,7 +13,15 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.route('/')
 def home():
-    return 'Welcome to the User API!', 200
+    """
+    Just a generic endpoint that we can use to test if the API is running.
+
+    Returns:
+        str: A timestamp string indicating the current time, alogn with a message.
+    """
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S') # Get the current time
+    welcome_message = f'Welcome to the User API!  The current time: {current_time}'
+    return welcome_message, 200
 
 @api_bp.route('/connection')
 def test_connection():
