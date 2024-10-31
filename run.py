@@ -17,7 +17,7 @@ from pathlib import Path
 #  "/users" will be accessible at "/api/users" in the application.
 
 
-def create_app():
+def create_app(*args, **kwargs):
     app = Flask(__name__)
     CORS(app)
 

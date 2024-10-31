@@ -15,4 +15,4 @@ COPY . /app
 ENV PORT 8000
 
 # Start the app using Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "run:create_app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "run:create_app()"]
